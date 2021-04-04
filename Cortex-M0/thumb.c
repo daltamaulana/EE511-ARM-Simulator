@@ -1234,7 +1234,7 @@ void str_sp_imm(uint16_t inst) {
   uint32_t addr_offset;
 
   // Read data from register
-  rn_data = R[13]; // Get base pointer from stack pointer R[13]
+  rn_data = SP; // Get base pointer from stack pointer R[13]
   rt_data = R[rt];
 
   // Bitwise AND operation
@@ -1254,7 +1254,7 @@ void ldr_sp_imm(uint16_t inst) {
   uint32_t addr_offset;
 
   // Read data from register
-  rn_data = R[13]; // Get base pointer from stack pointer R[13]
+  rn_data = SP; // Get base pointer from stack pointer R[13]
 
   // Calculate address offset
   addr_offset = rn_data + imm8;
@@ -1264,6 +1264,37 @@ void ldr_sp_imm(uint16_t inst) {
 
   // Write data to register
   R[rt] = rt_data;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                    Define Function for SP and PC Generator Instruction                      //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Offset PC value with Immediate Instruction
+void adr_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t rd = zeroExtend32(INST(10, 8));
+  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t result;
+
+  // Calculate PC offset
+  result = PC + imm8;
+
+  // Write data to register
+  R[rd] = result;
+}
+
+// Offset SP value with Immediate Instruction
+void add_sp_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t rd = zeroExtend32(INST(10, 8));
+  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t result;
+
+  // Calculate PC offset
+  result = SP + imm8;
+
+  // Write data to register
+  R[rd] = result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
