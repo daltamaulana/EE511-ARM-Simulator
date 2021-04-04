@@ -1298,6 +1298,150 @@ void add_sp_imm(uint16_t inst) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+//                   Define Function for Miscellaneous 16-bit Instruction                      //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Signed Extend Halfword Instruction
+void sxth_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rd_data;
+
+  // Read data from register
+  rm_data = extract32(R[rm], 0, 15);
+
+  // Sign extend data
+  rd_data = sign_extend(rm_data, 15);
+
+  // Write data to register
+  R[rd] = rd_data;
+}
+
+// Signed Extend Byte Instruction
+void sxtb_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rd_data;
+
+  // Read data from register
+  rm_data = extract32(R[rm], 0, 7);
+
+  // Sign extend data
+  rd_data = sign_extend(rm_data, 7);
+
+  // Write data to register
+  R[rd] = rd_data;
+}
+
+// Unsigned Extend Halfword Instruction
+void uxth_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rd_data;
+
+  // Read data from register
+  rm_data = extract32(R[rm], 0, 15);
+
+  // Sign extend data
+  rd_data = zeroExtend32(rm_data);
+
+  // Write data to register
+  R[rd] = rd_data;
+}
+
+// Unsigned Extend Byte Instruction
+void uxtb_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rd_data;
+
+  // Read data from register
+  rm_data = extract32(R[rm], 0, 7);
+
+  // Sign extend data
+  rd_data = zeroExtend32(rm_data);
+
+  // Write data to register
+  R[rd] = rd_data;
+}
+
+// Byte Reverse Word Instruction
+void rev_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data_0;
+  uint32_t rm_data_1;
+  uint32_t rm_data_2;
+  uint32_t rm_data_3;
+  uint32_t result;
+
+  // Read data from register
+  rm_data_0 = extract32(R[rm], 0, 7); // First byte
+  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
+  rm_data_2 = extract32(R[rm], 16, 23); // Third byte
+  rm_data_3 = extract32(R[rm], 24, 31); // Fourth byte
+
+  // Reverse byte ordering
+  result = (rm_data_0 << 24) | (rm_data_1 << 16) | (rm_data_2 << 8) | (rm_data_3); 
+
+  // Write data to register
+  R[rd] = result;
+}
+
+// Byte Reverse Packed Halfword Instruction
+void rev16_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data_0;
+  uint32_t rm_data_1;
+  uint32_t rm_data_2;
+  uint32_t rm_data_3;
+  uint32_t result;
+
+  // Read data from register
+  rm_data_0 = extract32(R[rm], 0, 7); // First byte
+  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
+  rm_data_2 = extract32(R[rm], 16, 23); // Third byte
+  rm_data_3 = extract32(R[rm], 24, 31); // Fourth byte
+
+  // Reverse byte ordering
+  result = (rm_data_2 << 24) | (rm_data_3 << 16) | (rm_data_0 << 8) | (rm_data_1); 
+
+  // Write data to register
+  R[rd] = result;
+}
+
+// Byte Reverse Packed Halfword Instruction
+void revsh_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data_0;
+  uint32_t rm_data_1;
+  uint32_t result;
+
+  // Read data from register
+  rm_data_0 = extract32(R[rm], 0, 7); // First byte
+  rm_data_0 = sign_extend(rm_data_0, 8); // Sign extend
+  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
+
+  // Reverse byte ordering
+  result = (rm_data_0 << 24) | (rm_data_1); 
+
+  // Write data to register
+  R[rd] = result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 //                   Define Function for Unconditional Branch Instruction                      //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Unconditional Branch Instruction
