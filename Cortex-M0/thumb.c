@@ -224,7 +224,7 @@ void sub_reg(uint16_t inst)
   rm_data = R[rm];
   rn_data = R[rn];
 
-  // Add operation
+  // Sub operation
   result = rn_data + ~(rm_data) + 1; // Two's complement substraction
 
   // Write data to register
@@ -284,7 +284,7 @@ void sub_imm_3(uint16_t inst)
   // Read data from register
   rn_data = R[rn];
 
-  // Add operation
+  // Sub operation
   result = rn_data + ~(imm3) + 1; // Two's complement substraction
 
   // Write data to register
@@ -397,6 +397,240 @@ void sub_imm_8(uint16_t inst)
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                       Define Function for Data Processing Instruction                       //
 /////////////////////////////////////////////////////////////////////////////////////////////////
+// Bitwise AND Instruction
+void and_reg(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // AND operation
+  result = rm_data & rn_data;
+
+  // Write data to register
+  R[rdn] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Bitwise XOR Instruction
+void xor_reg(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // XOR operation
+  result = rm_data ^ rn_data;
+
+  // Write data to register
+  R[rdn] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Logical Shift Left (Register) Instruction
+void lsl_reg(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+  uint32_t carry_out;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // Performs shifting operation
+  carry_out = extract32_(rn_data, 31);
+  result = (rn_data << rm_data);
+
+  // Write data to register
+  R[rdn] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Logical Shift Right (Register) Instruction
+void lsr_reg(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+  uint32_t carry_out;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // Performs shifting operation
+  result = (rn_data >> (rm_data-1));
+  carry_out = extract32_(result, 0);
+  result = (result >> (1));
+
+  // Write data to register
+  R[rdn] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Arithmetic Shift Right (Register) Instruction
+void asr_reg(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+  uint32_t carry_out;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // Performs shifting operation
+  result = (rn_data >> (rm_data-1));
+  carry_out = extract32_(result, 0);
+  result = (result >> (1));
+  result = sign_extend(result, (32-(rm_data)));
+
+  // Write data to register
+  R[rdn] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Add with Carry Instruction
+void add_carry(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  // Unsigned data variable
+  uint32_t u_rm_data;
+  uint32_t u_rn_data;
+  uint32_t unsigned_sum;
+  // Signed data variable
+  int32_t s_rm_data;
+  int32_t s_rn_data;
+  int32_t signed_sum;
+
+  // Read data from register
+  // Unsigned data
+  u_rm_data = R[rm];
+  u_rn_data = R[rdn];
+  // Signed data
+  s_rm_data = R[rm];
+  s_rn_data = R[rdn];
+
+  // Add operation
+  unsigned_sum = u_rm_data + u_rn_data + APSR.C; // Unsigned add
+  signed_sum = s_rm_data + s_rn_data + APSR.C; // Signed add
+
+  // Write data to register
+  R[rdn] = unsigned_sum;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(unsigned_sum, 31);
+  APSR.Z = (unsigned_sum == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Add with Carry Instruction
+void sub_carry(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // Sub operation
+  result = rn_data + ~(rm_data) + APSR.C; // Two's complement substraction
+
+  // Write data to register
+  R[rdn] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Rotate Right (Register) Instruction
+void ror_reg(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t temp;
+  uint32_t result;
+  uint32_t carry_out;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // Rotate operation
+  temp = extract32(rn_data, 0, (rm_data-1));
+  temp = (temp << (32-rm_data));
+  result = (rn_data >> rm_data);
+  result = result ^ temp;
+  carry_out = extract32_(result, 31);
+
+  // Write data to register
+  R[rdn] = result;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                   Define Function for Unconditional Branch Instruction                      //
