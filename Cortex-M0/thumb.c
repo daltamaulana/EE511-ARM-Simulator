@@ -632,6 +632,640 @@ void ror_reg(uint16_t inst)
   R[rdn] = result;
 }
 
+// Test Logical AND (Register) Instruction
+void tst_and(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Logical AND Operation
+  result = rm_data & rn_data;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Reverse Substract (Register) Instruction
+void rsb_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rn_data;
+  uint32_t imm32 = 0;
+  uint32_t result;
+
+  // Read data from register
+  rn_data = R[rn];
+
+  // Sub operation
+  result = ~(rn_data) + imm32 + 1; // Two's complement substraction
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Compare Register Instruction
+void cmp_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Sub operation
+  result = rn_data + ~(rm_data) + 1; // Two's complement substraction
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Compare Negative Register Instruction
+void cmn_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Sub operation
+  result = rn_data + rm_data; // Two's complement addition
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Logical OR (Register) Instruction
+void orr_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // Bitwise OR operation
+  result = rn_data | rm_data;
+
+  // Write data to register
+  R[rdn] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Multiply (Register) Instruction
+void mul_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rdm = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rdm];
+  rn_data = R[rn];
+
+  // Multiplication operation
+  result = rn_data * rm_data;
+
+  // Write data to register
+  R[rdm] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
+}
+
+// Bit Clear (Register) Instruction
+void bic_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rdn];
+
+  // Bitwise AND operation
+  result = rn_data & ~(rm_data);
+
+  // Write data to register
+  R[rdn] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V;
+}
+
+// Bitwise NOT (Register) Instruction
+void mvn_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+
+  // Bitwise AND operation
+  result = ~(rm_data);
+
+  // Write data to register
+  R[rd] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                   Define Function for Special Data and Branch Instruction                   //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Add Register Instruction
+void add_reg(uint16_t inst)
+{
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  // Unsigned data variable
+  uint32_t u_rm_data;
+  uint32_t u_rn_data;
+  uint32_t unsigned_sum;
+  // Signed data variable
+  int32_t s_rm_data;
+  int32_t s_rn_data;
+  int32_t signed_sum;
+
+  // Read data from register
+  // Unsigned data
+  u_rm_data = R[rm];
+  u_rn_data = R[rn];
+  // Signed data
+  s_rm_data = R[rm];
+  s_rn_data = R[rn];
+
+  // Add operation
+  unsigned_sum = u_rm_data + u_rn_data; // Unsigned add
+  signed_sum = s_rm_data + s_rn_data; // Signed add
+
+  // Write data to register
+  R[rd] = unsigned_sum;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(unsigned_sum, 31);
+  APSR.Z = (unsigned_sum == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
+// Move (Register) Instruction
+void mov_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(5, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+
+  // Bitwise AND operation
+  result = rm_data;
+
+  // Write data to register
+  R[rd] = result;
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                      Define Function for Load and Store Instruction                         //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Store Word (Register) Instruction
+void str_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+  rt_data = R[rt];
+
+  // Bitwise AND operation
+  addr_offset = rn_data + rm_data;
+
+  // Write data to memory
+  write_word(addr_offset, rt_data);
+}
+
+// Store Halfword (Register) Instruction
+void strh_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+  rt_data = extract32(R[rt], 0, 15); // Get Halfword from bit 0 - bit 15
+
+  // Bitwise AND operation
+  addr_offset = rn_data + rm_data;
+
+  // Write data to memory
+  write_halfword(addr_offset, rt_data);
+}
+
+// Store Byte (Register) Instruction
+void strb_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+  rt_data = extract32(R[rt], 0, 8); // Get Byte from bit 0 - bit 8
+
+  // Bitwise AND operation
+  addr_offset = rn_data + rm_data;
+
+  // Write data to memory
+  write_byte(addr_offset, rt_data);
+}
+
+// Load Signed Byte (Register) Instruction
+void ldsrb_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Calculate address offset
+  addr_offset = rn_data + rm_data;
+
+  // Read data from memory
+  rt_data = read_byte(addr_offset);
+  rt_data = sign_extend(rt_data, 8);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
+// Load Word (Register) Instruction
+void ldr_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Calculate address offset
+  addr_offset = rn_data + rm_data;
+
+  // Read data from memory
+  rt_data = read_word(addr_offset);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
+// Load Halfword (Register) Instruction
+void ldrh_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Calculate address offset
+  addr_offset = rn_data + rm_data;
+
+  // Read data from memory
+  rt_data = read_halfword(addr_offset);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
+// Load Byte (Register) Instruction
+void ldrb_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Calculate address offset
+  addr_offset = rn_data + rm_data;
+
+  // Read data from memory
+  rt_data = read_byte(addr_offset);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
+// Load Signed Halfword (Register) Instruction
+void ldsrb_reg(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(8, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Calculate address offset
+  addr_offset = rn_data + rm_data;
+
+  // Read data from memory
+  rt_data = read_halfword(addr_offset);
+  rt_data = sign_extend(rt_data, 16);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
+// Store Word (Immediate) Instruction
+void str_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rn_data = R[rn];
+  rt_data = R[rt];
+
+  // Bitwise AND operation
+  addr_offset = rn_data + imm5;
+
+  // Write data to memory
+  write_word(addr_offset, rt_data);
+}
+
+// Load Word (Immediate) Instruction
+void ldr_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rn_data = R[rn];
+
+  // Calculate address offset
+  addr_offset = rn_data + imm5;
+
+  // Read data from memory
+  rt_data = read_word(addr_offset);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
+// Store Byte (Immediate) Instruction
+void strb_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rn_data = R[rn];
+  rt_data = extract32(R[rt], 0, 8); // Get Byte from bit 0 - bit 8
+
+  // Bitwise AND operation
+  addr_offset = rn_data + imm5;
+
+  // Write data to memory
+  write_byte(addr_offset, rt_data);
+}
+
+// Load Word (Immediate) Instruction
+void ldrb_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rn_data = R[rn];
+
+  // Calculate address offset
+  addr_offset = rn_data + imm5;
+
+  // Read data from memory
+  rt_data = read_byte(addr_offset);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
+// Store Halfword (Immediate) Instruction
+void strh_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rn_data = R[rn];
+  rt_data = extract32(R[rt], 0, 16); // Get Byte from bit 0 - bit 16
+
+  // Bitwise AND operation
+  addr_offset = rn_data + imm5;
+
+  // Write data to memory
+  write_halfword(addr_offset, rt_data);
+}
+
+// Load Halfword (Immediate) Instruction
+void ldrh_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t rn = zeroExtend32(INST(5, 3));
+  uint32_t rt = zeroExtend32(INST(2, 0));
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rn_data = R[rn];
+
+  // Calculate address offset
+  addr_offset = rn_data + imm5;
+
+  // Read data from memory
+  rt_data = read_halfword(addr_offset);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
+// Store Word Stack Pointer (Immediate) Instruction
+void str_sp_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t rt = zeroExtend32(INST(10, 8));
+  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rn_data = R[13]; // Get base pointer from stack pointer R[13]
+  rt_data = R[rt];
+
+  // Bitwise AND operation
+  addr_offset = rn_data + imm8;
+
+  // Write data to memory
+  write_word(addr_offset, rt_data);
+}
+
+// Load Word Stack Pointer (Immediate) Instruction
+void ldr_sp_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t rt = zeroExtend32(INST(10, 8));
+  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t rn_data;
+  uint32_t rt_data;
+  uint32_t addr_offset;
+
+  // Read data from register
+  rn_data = R[13]; // Get base pointer from stack pointer R[13]
+
+  // Calculate address offset
+  addr_offset = rn_data + imm8;
+
+  // Read data from memory
+  rt_data = read_word(addr_offset);
+
+  // Write data to register
+  R[rt] = rt_data;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                   Define Function for Unconditional Branch Instruction                      //
 /////////////////////////////////////////////////////////////////////////////////////////////////
