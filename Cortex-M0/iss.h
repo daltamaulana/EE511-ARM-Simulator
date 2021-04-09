@@ -72,5 +72,7 @@ void write_halfword(uint32_t addr, uint32_t value);
 void write_byte(uint32_t addr, uint32_t value);
 
 /* your code here */
+// Function for performing bit count operation
+uint32_t bit_count(uint32_t bit_string, uint32_t bit_length);
 
 #endif

@@ -1372,6 +1372,46 @@ void uxtb_reg(uint16_t inst) {
   R[rd] = rd_data;
 }
 
+// Push Multiple Register Instruction
+void push_reg(uint16_t inst) {
+  // Declare local variables
+  int i;
+  uint32_t mem_addr;
+  uint32_t reg_count;
+  uint32_t reg_list = zeroExtend32(INST(7, 0));
+
+  // Calculate bit count value
+  reg_count = bit_count(reg_list, 8);
+
+  // Calculate memory address
+  mem_addr = SP - 4*(reg_count+1);
+  // Update stack pointer
+  SP = SP - 4*(reg_count+1);
+
+  // Store data to memory
+  for (i=0; i<15; i++) {
+    // Store general register value
+    if (i < 8) {
+      // Check bit
+      if (extract32_(reg_list, i) == 1) {
+        // Write to memory
+        write_word(mem_addr, R[i]);
+        // Increment address
+        mem_addr += 4;
+      }
+    }
+    // Store link register value 
+    else if (i == 14) {
+      // Write to memory
+      write_word(mem_addr, R[i]);
+    }
+    // Continue loop
+    else {
+      continue;
+    }
+  }
+}
+
 // Byte Reverse Word Instruction
 void rev_reg(uint16_t inst) {
   // Declare local variables
@@ -1476,3 +1516,25 @@ void bl(uint32_t inst)
   PC = address & 0xFFFFFFFE;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                                   Define Helper Function                                    //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+uint32_t bit_count(uint32_t bit_string, uint32_t bit_length) {
+  // Declare local variable
+  int i;
+  uint32_t temp = 0;
+  uint32_t count = 0;
+
+  // Loop through bitstring
+  for (i=0; i<bit_length; i++) {
+    // Shift data
+    temp = (bit_string >> i) & (0x1);
+    // Check bit
+    if (temp == 1) {
+      count++;
+    }
+  }
+
+  // Return value
+  return count;
+}
