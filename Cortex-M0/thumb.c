@@ -1378,38 +1378,69 @@ void push_reg(uint16_t inst) {
   int i;
   uint32_t mem_addr;
   uint32_t reg_count;
+  uint32_t pc_write = zeroExtend32(INST_(8));
   uint32_t reg_list = zeroExtend32(INST(7, 0));
 
   // Calculate bit count value
-  reg_count = bit_count(reg_list, 8);
+  reg_count = (pc_write == 1) ? bit_count(reg_list, 8)+1 : bit_count(reg_list, 8);
 
   // Calculate memory address
-  mem_addr = SP - 4*(reg_count+1);
-  // Update stack pointer
-  SP = SP - 4*(reg_count+1);
+  mem_addr = SP - (4 * reg_count);
 
-  // Store data to memory
-  for (i=0; i<15; i++) {
-    // Store general register value
-    if (i < 8) {
-      // Check bit
-      if (extract32_(reg_list, i) == 1) {
-        // Write to memory
-        write_word(mem_addr, R[i]);
-        // Increment address
-        mem_addr += 4;
-      }
-    }
-    // Store link register value 
-    else if (i == 14) {
+  // Store general register value
+  for (i=0; i<8; i++) {
+    // Check bit
+    if (extract32_(reg_list, i) == 1) {
       // Write to memory
       write_word(mem_addr, R[i]);
-    }
-    // Continue loop
-    else {
-      continue;
+      // Increment address
+      mem_addr += 4;
     }
   }
+
+  // Store link register value
+  if (pc_write == 1) {
+    // Write to memory
+    write_word(mem_addr, R[i]);
+  }
+
+  // Update stack pointer
+  SP = SP - (4 * reg_count);
+}
+
+// Pop Multiple Register Instruction
+void pop_reg(uint16_t inst) {
+  // Declare local variables
+  int i;
+  uint32_t mem_addr;
+  uint32_t reg_count;
+  uint32_t pc_load = zeroExtend32(INST_(8));
+  uint32_t reg_list = zeroExtend32(INST(7, 0));
+
+  // Calculate bit count value
+  reg_count = (pc_load == 1) ? bit_count(reg_list, 8)+1 : bit_count(reg_list, 8);
+
+  // Calculate memory address
+  mem_addr = SP;
+
+  // Loop through register list
+  for (i=0; i<8; i++) {
+    // Check bit
+    if (extract32_(reg_list, i) == 1) {
+      // Read from memory
+      R[i] = read_word(mem_addr);
+      // Increment address
+      mem_addr += 4;
+    }
+  }
+
+  // Check for PC load variable
+  if (pc_load == 1) {
+    PC = read_word(mem_addr);
+  }
+
+  // Update stack pointer
+  SP = SP + (4 * reg_count);
 }
 
 // Byte Reverse Word Instruction
@@ -1479,6 +1510,85 @@ void revsh_reg(uint16_t inst) {
 
   // Write data to register
   R[rd] = result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                  Define Function for Multiple Store and Load Instruction                    //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Store Multiple Register Instruction
+void store_mul(uint16_t inst) {
+  // Declare local variables
+  int i;
+  uint32_t mem_addr;
+  uint32_t reg_count;
+  uint32_t rn = zeroExtend32(INST(10, 8));
+  uint32_t reg_list = zeroExtend32(INST(7, 0));
+
+  // Calculate memory address
+  mem_addr = R[rn];
+
+  // Calculate bit count value
+  reg_count = bit_count(reg_list, 8);
+
+  // Loop through register list
+  for (i=0; i<8; i++) {
+    // Check bit
+    if (extract32_(reg_list, i) == 1) {
+      // Write to memory
+      write_word(mem_addr, R[i]);
+      // Increment address
+      mem_addr += 4;
+    }
+  }
+
+  // Update memory address in register
+  R[rn] = R[rn] + (4 * reg_count);
+}
+
+// Load Multiple Register Instruction
+void load_mul(uint16_t inst) {
+  // Declare local variables
+  int i;
+  uint32_t wback;
+  uint32_t mem_addr;
+  uint32_t reg_count;
+  uint32_t rn = zeroExtend32(INST(10, 8));
+  uint32_t reg_list = zeroExtend32(INST(7, 0));
+
+  // Get write back info
+  wback = (R[rn] == 0) ? 1 : 0;
+
+  // Calculate memory address
+  mem_addr = R[rn];
+
+  // Calculate bit count value
+  reg_count = bit_count(reg_list, 8);
+
+  // Loop through memory
+  for (i=0; i<8; i++) {
+    R[i] = read_word(mem_addr);
+    mem_addr += 4;
+  }
+
+  // Check for source register update
+  if (wback && (R[rn] == 0)) {
+    R[rn] = R[rn] + (4 * reg_count);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                    Define Function for Conditional Branch Instruction                       //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+void b_conditional(uint16_t inst) {
+  // Declare Local Variables
+  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm32;
+
+  // Calculate imm32 value
+  imm32 = sign_extend((imm8 << 1), 9);
+
+  // Write new PC value
+  PC = PC + imm32;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
