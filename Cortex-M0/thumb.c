@@ -21,51 +21,51 @@ void process(uint16_t inst)
   if (0) {
     // Check for Immediate Instruction
     if (INST(15, 14) == 0x0) {
-
+      imm_inst(inst); // Call immediate instruction parser
     }
     // Check for Data Processing Instruction
     else if (INST(15, 10) == 0x10) {
-
+      data_proc_inst(inst); // Call data processing instruction parser
     }
     // Check for Special Data and Branch Instruction
     else if (INST(15, 10) == 0x11) {
-
+      spec_data_inst(inst); // Call special data - branch instruction parser
     }
     // Check for Load from Pool Instruction
     else if (INST(15, 11) == 0x9) {
-
+      ld_pool(inst); // Call load from pool instruction
     }
     // Check for Load and Store Instruction (Register)
     else if ((INST(15, 12) == 0x5)) {
-      
+      load_store_inst(inst); // Call load and store instruction parser
     }
     // Check for Load and Store Instruction with Immediate (Word and Byte)
     else if ((INST(15, 13) == 0x3)) {
-      
+      load_imm_word_inst(inst); // Call load-store with immediate (Word) instruction parser
     }
-    // Check for Load and Store Instruction with Immediate (Word and Byte)
+    // Check for Load and Store Instruction with Immediate (Halfword)
     else if ((INST(15, 13) == 0x4)) {
-      
+      load_imm_half_inst(inst); // Call load-store with immediate (Halfword) instruction parser
     }
     // Check for PC Relative Address Generator Instruction
     else if ((INST(15, 11) == 0x14)) {
-      
+      adr_imm(inst); // Add to PC Relative Register Instruction
     }
     // Check for SP Relative Address Generator Instruction
     else if ((INST(15, 11) == 0x15)) {
-      
+      add_sp_imm(inst); // Add to SP Relative Register Instruction
     }
     // Check for 16-bit Miscellaneous Instruction
     else if ((INST(15, 12) == 0xB)) {
-      
+      misc_inst(inst); // Call miscellaneous instruction parser
     }
     // Check for Multiple registers Store and Load Instruction
     else if ((INST(15, 12) == 0xC)) {
-      
+      load_store_mul_inst(inst); // Call multiple load and store instruction parser
     }
     // Check for Conditional Branch Instruction
     else if ((INST(15, 12) == 0xD)) {
-      
+      cond_branch_inst(inst); // Call conditional branch instrucion parser
     }
     // Invalid Instruction
     else {
@@ -80,6 +80,302 @@ void process(uint16_t inst)
     inst32 = ((uint32_t) inst << 16) | ((uint32_t) inst2);
     if (extract16_(inst2, 14) && extract16_(inst2, 12))
       bl(inst32);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                           Define Function for Parsing Instruction                           //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Immediate instruction parser
+void imm_inst(uint16_t inst) {
+  if (INST(13, 11) == 0x0) {
+    lsl_imm(inst);
+  }
+  else if (INST(13, 11) == 0x1) {
+    lsr_imm(inst);
+  }
+  else if (INST(13, 11) == 0x2) {
+    asr_imm(inst);
+  }
+  else if (INST(13, 11) == 0x3) {
+    if (INST(10, 9) == 0x0) {
+      add_reg(inst);
+    }
+    else if (INST(10, 9) == 0x1) {
+      sub_reg(inst);
+    }
+    else if (INST(10, 9) == 0x2) {
+      add_imm_3(inst);
+    }
+    else if (INST(10, 9) == 0x3) {
+      sub_imm_3(inst);
+    }
+    else {
+      printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+    }
+  }
+  else if (INST(13, 11) == 0x4) {
+    move_imm(inst);
+  }
+  else if (INST(13, 11) == 0x5) {
+    comp_imm(inst);
+  }
+  else if (INST(13, 11) == 0x5) {
+    add_imm_8(inst);
+  }
+  else if (INST(13, 11) == 0x5) {
+    sub_imm_8(inst);
+  }
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+  }
+}
+
+// Data processing instruction parser
+void data_proc_inst(uint16_t inst) {
+  if (INST(9, 6) == 0x0) {
+    and_reg(inst);
+  }
+  else if (INST(9, 6) == 0x1) {
+    xor_reg(inst);
+  }
+  else if (INST(9, 6) == 0x2) {
+    lsl_reg(inst);
+  }
+  else if (INST(9, 6) == 0x3) {
+    lsr_reg(inst);
+  }
+  else if (INST(9, 6) == 0x4) {
+    asr_reg(inst);
+  }
+  else if (INST(9, 6) == 0x5) {
+    add_carry(inst);
+  }
+  else if (INST(9, 6) == 0x6) {
+    sub_carry(inst);
+  }
+  else if (INST(9, 6) == 0x7) {
+    ror_reg(inst);
+  }
+  else if (INST(9, 6) == 0x8) {
+    tst_and(inst);
+  }
+  else if (INST(9, 6) == 0x9) {
+    rsb_imm(inst);
+  }
+  else if (INST(9, 6) == 0xA) {
+    cmp_reg(inst);
+  }
+  else if (INST(9, 6) == 0xB) {
+    cmn_reg(inst);
+  }
+  else if (INST(9, 6) == 0xC) {
+    orr_reg(inst);
+  }
+  else if (INST(9, 6) == 0xD) {
+    mul_reg(inst);
+  }
+  else if (INST(9, 6) == 0xE) {
+    bic_reg(inst);
+  }
+  else if (INST(9, 6) == 0xF) {
+    mvn_reg(inst);
+  }
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+  }
+}
+
+// Special data and branch instruction parser
+void spec_data_inst(uint16_t inst) {
+  if (INST(9, 8) == 0x0) {
+    add_reg(inst);
+  }
+  else if (INST(9, 8) == 0x1) {
+    comp_reg_2(inst);
+  }
+  else if (INST(9, 8) == 0x2) {
+    mov_reg(inst);
+  }
+  else if (INST(9, 8) == 0x3) {
+    if (INST_(7) == 0x0) {
+      b_exchange(inst);
+    }
+    else {
+      bl_exchange(inst);
+    }
+  }
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+  }
+}
+
+// Load and store instruction parser
+void load_store_inst(uint16_t inst) {
+  if (INST(11, 9) == 0x0) {
+    str_reg(inst);
+  }
+  else if (INST(11, 9) == 0x1) {
+    strh_reg(inst);
+  }
+  else if (INST(11, 9) == 0x2) {
+    strb_reg(inst);
+  }
+  else if (INST(11, 9) == 0x3) {
+    ldsrb_reg(inst);
+  }
+  else if (INST(11, 9) == 0x4) {
+    ldr_reg(inst);
+  }
+  else if (INST(11, 9) == 0x5) {
+    ldrh_reg(inst);
+  }
+  else if (INST(11, 9) == 0x6) {
+    ldrb_reg(inst);
+  }
+  else if (INST(11, 9) == 0x7) {
+    ldsrb_reg(inst);
+  }
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+  }
+}
+
+// Load and store with immediate instruction parser
+void load_imm_word_inst(uint16_t inst) {
+  if (INST(12, 11) == 0x0) {
+    str_imm(inst);
+  }
+  else if (INST(12, 11) == 0x1) {
+    ldr_imm(inst);
+  }
+  else if (INST(12, 11) == 0x2) {
+    strb_imm(inst);
+  }
+  else if (INST(12, 11) == 0x3) {
+    ldrb_imm(inst);
+  }
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+  }
+}
+
+// Load and store with immediate (halfword) instruction parser
+void load_imm_half_inst(uint16_t inst) {
+  if (INST(12, 11) == 0x0) {
+    strh_imm(inst);
+  }
+  else if (INST(12, 11) == 0x1) {
+    ldrh_imm(inst);
+  }
+  else if (INST(12, 11) == 0x2) {
+    str_sp_imm(inst);
+  }
+  else if (INST(12, 11) == 0x3) {
+    ldr_sp_imm(inst);
+  }
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+  }
+}
+
+// Miscellaneous instruction parser
+void misc_inst(uint16_t inst) {
+  if (INST(11, 8) == 0x0) {
+    if (INST_(7) == 0) {
+      add_sp_imm_2(inst);
+    }
+    else {
+      sub_sp_imm(inst);
+    }
+  }
+  else if (INST(11, 8) == 0x2) {
+    if (INST(7, 6) == 0x0) {
+      sxth_reg(inst);
+    }
+    else if (INST(7, 6) == 0x1) {
+      sxtb_reg(inst);
+    }
+    else if (INST(7, 6) == 0x2) {
+      uxth_reg(inst);
+    }
+    else {
+      uxtb_reg(inst);
+    }
+  }
+  else if (INST(11, 9) == 0x2) {
+    push_reg(inst);
+  }
+  else if (INST(11, 9) == 0x3) {
+    printf("[Status] Change processor state instruction!\n");
+  }
+  else if (INST(11, 9) == 0x5) {
+    if (INST(7, 6) == 0x0) {
+      rev_reg(inst);
+    }
+    else if (INST(7, 6) == 0x1) {
+      rev16_reg(inst);
+    }
+    else if (INST(7, 6) == 0x3) {
+      revsh_reg(inst);
+    }
+    else {
+      printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+    }
+  }
+  else if (INST(11, 9) == 0x6) {
+    pop_reg(inst);
+  }
+  else if (INST(11, 9) == 0x7) {
+    if (INST_(8) == 0) {
+      printf("[Status] Breakpoint instruction!\n");
+    }
+    else {
+      if (INST(7, 4) == 0x0) {
+        printf("[Status] No operation instruction!\n");
+      }
+      else if (INST(7, 4) == 0x1) {
+        printf("[Status] Yield instruction!\n");
+      }
+      else if (INST(7, 4) == 0x2) {
+        printf("[Status] WFE instruction!\n");
+      }
+      else if (INST(7, 4) == 0x3) {
+        printf("[Status] WFI instruction!\n");
+      }
+      else if (INST(7, 4) == 0x4) {
+        printf("[Status] SEV instruction!\n");
+      }
+      else {
+        printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+      }
+    }
+  }
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
+  }
+}
+
+// Load and store multiple instruction parser
+void load_store_mul_inst(uint16_t inst) {
+  if (INST_(11) == 0) {
+    store_mul(inst);
+  }
+  else {
+    load_mul(inst);
+  }
+}
+
+// Conditional branch instruction parser
+void cond_branch_inst(uint16_t inst) {
+  if (INST(11, 8) == 0xF) {
+    printf("[Status] Supervisor call instruction!\n");
+  }
+  else if (INST(11, 8) == 0xE) {
+    printf("[Status] Undefined instruction!\n");
+  }
+  else {
+    b_conditional(inst);
   }
 }
 
@@ -109,7 +405,7 @@ void lsl_imm(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(reg_data, 31);
   APSR.Z = (reg_data == 0) ? 1 : 0;
-  APSR.C = carry_out;
+  APSR.C = (imm5 > 0) ? carry_out : APSR.C;
   APSR.V = APSR.V;
 }
 
@@ -137,7 +433,7 @@ void lsr_imm(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(reg_data, 31);
   APSR.Z = (reg_data == 0) ? 1 : 0;
-  APSR.C = carry_out;
+  APSR.C = (imm5 > 0) ? carry_out : APSR.C;
   APSR.V = APSR.V;
 }
 
@@ -829,12 +1125,13 @@ void mvn_reg(uint16_t inst) {
 //                   Define Function for Special Data and Branch Instruction                   //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Add Register Instruction
-void add_reg(uint16_t inst)
-{
+void add_reg(uint16_t inst) {
   // Declare local variables
-  uint32_t rm = zeroExtend32(INST(8, 6));
-  uint32_t rn = zeroExtend32(INST(5, 3));
-  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t dn = zeroExtend32(INST_(7));
+  uint32_t rm = zeroExtend32(INST(6, 3));
+  uint32_t rdn = zeroExtend32(INST(2, 0));
+  uint32_t rn = rdn | (dn << 3);
+  uint32_t rd = rdn | (dn << 3);
   // Unsigned data variable
   uint32_t u_rm_data;
   uint32_t u_rn_data;
@@ -866,11 +1163,36 @@ void add_reg(uint16_t inst)
   APSR.V = APSR.V; //NOTE: Fix status register
 }
 
+// Compare (Register 2) Instruction
+void comp_reg_2(uint16_t inst) {
+  // Declare local variables
+  uint32_t n = zeroExtend32(INST_(7));
+  uint32_t rm = zeroExtend32(INST(6, 3));
+  uint32_t rn = zeroExtend32(INST(2, 0)) | (n << 3);
+  uint32_t rm_data;
+  uint32_t rn_data;
+  uint32_t result;
+
+  // Read data from register
+  rm_data = R[rm];
+  rn_data = R[rn];
+
+  // Sub operation
+  result = rn_data + ~(rm_data) + 1; // Two's complement substraction
+
+  // Write value to APSR (status register)
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.V = APSR.V; //NOTE: Fix status register
+}
+
 // Move (Register) Instruction
 void mov_reg(uint16_t inst) {
   // Declare local variables
-  uint32_t rm = zeroExtend32(INST(5, 3));
-  uint32_t rd = zeroExtend32(INST(2, 0));
+  uint32_t d = zeroExtend32(INST_(7));
+  uint32_t rm = zeroExtend32(INST(6, 3));
+  uint32_t rd = zeroExtend32(INST(2, 0)) | (d << 3);
   uint32_t rm_data;
   uint32_t result;
 
@@ -888,6 +1210,53 @@ void mov_reg(uint16_t inst) {
   APSR.Z = (result == 0) ? 1 : 0;
   APSR.C = APSR.C; //NOTE: Fix status register
   APSR.V = APSR.V;
+}
+
+// Branch Exchange Instruction
+void b_exchange(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(6, 3));
+  uint32_t rm_data;
+
+  // Read data from register
+  rm_data = R[rm];
+
+  // Branch instruction
+  PC = rm_data & 0xFFFFFFFE;
+}
+
+// Branch Exchange with Link Instruction
+void bl_exchange(uint16_t inst) {
+  // Declare local variables
+  uint32_t rm = zeroExtend32(INST(6, 3));
+  uint32_t rm_data;
+  uint32_t next_inst_addr;
+  uint32_t lr;
+
+  // Read data from register
+  rm_data = R[rm];
+
+  // Calculate next instruction address
+  next_inst_addr = PC - 2;
+  lr = next_inst_addr | 0x00000001;
+
+  // Branch instruction
+  PC = rm_data & 0xFFFFFFFE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                        Define Function for Load from Pool Instruction                       //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+void ld_pool(uint16_t inst) {
+  uint32_t rt = zeroExtend32(INST(10, 8));
+  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t mem_addr;
+
+  // Calculate memory address
+  mem_addr = (4 * (PC / 4)) + imm8;
+
+  // Read from memory
+  R[rt] = read_word(mem_addr);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1300,6 +1669,34 @@ void add_sp_imm(uint16_t inst) {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                   Define Function for Miscellaneous 16-bit Instruction                      //
 /////////////////////////////////////////////////////////////////////////////////////////////////
+// Offset SP value with Immediate 2 Instruction
+void add_sp_imm_2(uint16_t inst) {
+  // Declare local variables
+  uint32_t rd = 13;
+  uint32_t imm7 = zeroExtend32(INST(6, 0));
+  uint32_t result;
+
+  // Calculate PC offset
+  result = SP + imm7;
+
+  // Write data to register
+  R[rd] = result;
+}
+
+// Negative Offset SP value with Immediate 2 Instruction
+void sub_sp_imm(uint16_t inst) {
+  // Declare local variables
+  uint32_t rd = 13;
+  uint32_t imm7 = zeroExtend32(INST(6, 0));
+  uint32_t result;
+
+  // Calculate PC offset
+  result = SP + ~(imm7) + 1; // Two's complement substraction
+
+  // Write data to register
+  R[rd] = result;
+}
+
 // Signed Extend Halfword Instruction
 void sxth_reg(uint16_t inst) {
   // Declare local variables
@@ -1408,41 +1805,6 @@ void push_reg(uint16_t inst) {
   SP = SP - (4 * reg_count);
 }
 
-// Pop Multiple Register Instruction
-void pop_reg(uint16_t inst) {
-  // Declare local variables
-  int i;
-  uint32_t mem_addr;
-  uint32_t reg_count;
-  uint32_t pc_load = zeroExtend32(INST_(8));
-  uint32_t reg_list = zeroExtend32(INST(7, 0));
-
-  // Calculate bit count value
-  reg_count = (pc_load == 1) ? bit_count(reg_list, 8)+1 : bit_count(reg_list, 8);
-
-  // Calculate memory address
-  mem_addr = SP;
-
-  // Loop through register list
-  for (i=0; i<8; i++) {
-    // Check bit
-    if (extract32_(reg_list, i) == 1) {
-      // Read from memory
-      R[i] = read_word(mem_addr);
-      // Increment address
-      mem_addr += 4;
-    }
-  }
-
-  // Check for PC load variable
-  if (pc_load == 1) {
-    PC = read_word(mem_addr);
-  }
-
-  // Update stack pointer
-  SP = SP + (4 * reg_count);
-}
-
 // Byte Reverse Word Instruction
 void rev_reg(uint16_t inst) {
   // Declare local variables
@@ -1510,6 +1872,41 @@ void revsh_reg(uint16_t inst) {
 
   // Write data to register
   R[rd] = result;
+}
+
+// Pop Multiple Register Instruction
+void pop_reg(uint16_t inst) {
+  // Declare local variables
+  int i;
+  uint32_t mem_addr;
+  uint32_t reg_count;
+  uint32_t pc_load = zeroExtend32(INST_(8));
+  uint32_t reg_list = zeroExtend32(INST(7, 0));
+
+  // Calculate bit count value
+  reg_count = (pc_load == 1) ? bit_count(reg_list, 8)+1 : bit_count(reg_list, 8);
+
+  // Calculate memory address
+  mem_addr = SP;
+
+  // Loop through register list
+  for (i=0; i<8; i++) {
+    // Check bit
+    if (extract32_(reg_list, i) == 1) {
+      // Read from memory
+      R[i] = read_word(mem_addr);
+      // Increment address
+      mem_addr += 4;
+    }
+  }
+
+  // Check for PC load variable
+  if (pc_load == 1) {
+    PC = read_word(mem_addr);
+  }
+
+  // Update stack pointer
+  SP = SP + (4 * reg_count);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

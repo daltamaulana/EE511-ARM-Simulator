@@ -71,8 +71,92 @@ void write_word(uint32_t addr, uint32_t value);
 void write_halfword(uint32_t addr, uint32_t value);
 void write_byte(uint32_t addr, uint32_t value);
 
-/* your code here */
-// Function for performing bit count operation
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//                                     Function Declaration                                    //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+void imm_inst(uint16_t inst);
+void data_proc_inst(uint16_t inst);
+void spec_data_inst(uint16_t inst);
+void load_store_inst(uint16_t inst);
+void load_imm_word_inst(uint16_t inst);
+void load_imm_half_inst(uint16_t inst);
+void misc_inst(uint16_t inst);
+void load_store_mul_inst(uint16_t inst);
+void cond_branch_inst(uint16_t inst);
+
+void lsl_imm(uint16_t inst);
+void lsr_imm(uint16_t inst);
+void asr_imm(uint16_t inst);
+void add_reg(uint16_t inst);
+void sub_reg(uint16_t inst);
+void add_imm_3(uint16_t inst);
+void sub_imm_3(uint16_t inst);
+void move_imm(uint16_t inst);
+void comp_imm(uint16_t inst);
+void add_imm_8(uint16_t inst);
+void sub_imm_8(uint16_t inst);
+
+void and_reg(uint16_t inst);
+void xor_reg(uint16_t inst);
+void lsl_reg(uint16_t inst);
+void lsr_reg(uint16_t inst);
+void asr_reg(uint16_t inst);
+void add_carry(uint16_t inst);
+void sub_carry(uint16_t inst);
+void ror_reg(uint16_t inst);
+void tst_and(uint16_t inst);
+void rsb_imm(uint16_t inst);
+void cmp_reg(uint16_t inst);
+void orr_reg(uint16_t inst);
+void mul_reg(uint16_t inst);
+void bic_reg(uint16_t inst);
+void mvn_reg(uint16_t inst);
+
+void add_reg(uint16_t inst);
+void comp_reg_2(uint16_t inst);
+void mov_reg(uint16_t inst);
+void b_exchange(uint16_t inst);
+void bl_exchange(uint16_t inst);
+
+void ld_pool(uint16_t inst);
+
+void str_reg(uint16_t inst);
+void strh_reg(uint16_t inst);
+void strb_reg(uint16_t inst);
+void ldsrb_reg(uint16_t inst);
+void ldr_reg(uint16_t inst);
+void ldrh_reg(uint16_t inst);
+void ldrb_reg(uint16_t inst);
+void ldsrb_reg(uint16_t inst);
+void str_imm(uint16_t inst);
+void ldr_imm(uint16_t inst);
+void strb_imm(uint16_t inst);
+void ldrb_imm(uint16_t inst);
+void strh_imm(uint16_t inst);
+void ldrh_imm(uint16_t inst);
+void str_sp_imm(uint16_t inst);
+void ldr_sp_imm(uint16_t inst);
+
+void adr_imm(uint16_t inst);
+void add_sp_imm(uint16_t inst);
+
+void add_sp_imm_2(uint16_t inst);
+void sub_sp_imm(uint16_t inst);
+void sxth_reg(uint16_t inst);
+void sxtb_reg(uint16_t inst);
+void uxth_reg(uint16_t inst);
+void uxtb_reg(uint16_t inst);
+void push_reg(uint16_t inst);
+void rev_reg(uint16_t inst);
+void rev16_reg(uint16_t inst);
+void revsh_reg(uint16_t inst);
+void pop_reg(uint16_t inst);
+
+void store_mul(uint16_t inst);
+void load_mul(uint16_t inst);
+
+void b_conditional(uint16_t inst);
+
 uint32_t bit_count(uint32_t bit_string, uint32_t bit_length);
 
 #endif
