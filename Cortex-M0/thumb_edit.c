@@ -19,58 +19,55 @@ void process(uint16_t inst)
 
   // Decode Instruction Set
   if (0) {
-    // Check for Immediate Instruction
-    if (INST(15, 14) == 0x0) {
-      imm_inst(inst); // Call immediate instruction parser
-    }
-    // Check for Data Processing Instruction
-    else if (INST(15, 10) == 0x10) {
-      data_proc_inst(inst); // Call data processing instruction parser
-    }
-    // Check for Special Data and Branch Instruction
-    else if (INST(15, 10) == 0x11) {
-      spec_data_inst(inst); // Call special data - branch instruction parser
-    }
-    // Check for Load from Pool Instruction
-    else if (INST(15, 11) == 0x9) {
-      ld_pool(inst); // Call load from pool instruction
-    }
-    // Check for Load and Store Instruction (Register)
-    else if ((INST(15, 12) == 0x5)) {
-      load_store_inst(inst); // Call load and store instruction parser
-    }
-    // Check for Load and Store Instruction with Immediate (Word and Byte)
-    else if ((INST(15, 13) == 0x3)) {
-      load_imm_word_inst(inst); // Call load-store with immediate (Word) instruction parser
-    }
-    // Check for Load and Store Instruction with Immediate (Halfword)
-    else if ((INST(15, 13) == 0x4)) {
-      load_imm_half_inst(inst); // Call load-store with immediate (Halfword) instruction parser
-    }
-    // Check for PC Relative Address Generator Instruction
-    else if ((INST(15, 11) == 0x14)) {
-      adr_imm(inst); // Add to PC Relative Register Instruction
-    }
-    // Check for SP Relative Address Generator Instruction
-    else if ((INST(15, 11) == 0x15)) {
-      add_sp_imm(inst); // Add to SP Relative Register Instruction
-    }
-    // Check for 16-bit Miscellaneous Instruction
-    else if ((INST(15, 12) == 0xB)) {
-      misc_inst(inst); // Call miscellaneous instruction parser
-    }
-    // Check for Multiple registers Store and Load Instruction
-    else if ((INST(15, 12) == 0xC)) {
-      load_store_mul_inst(inst); // Call multiple load and store instruction parser
-    }
-    // Check for Conditional Branch Instruction
-    else if ((INST(15, 12) == 0xD)) {
-      cond_branch_inst(inst); // Call conditional branch instrucion parser
-    }
-    // Invalid Instruction
-    else {
-      printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
-    }
+  
+  }
+  // Check for Immediate Instruction
+  else if (INST(15, 14) == 0x0) {
+    imm_inst(inst); // Call immediate instruction parser
+  }
+  // Check for Data Processing Instruction
+  else if (INST(15, 10) == 0x10) {
+    data_proc_inst(inst); // Call data processing instruction parser
+  }
+  // Check for Special Data and Branch Instruction
+  else if (INST(15, 10) == 0x11) {
+    spec_data_inst(inst); // Call special data - branch instruction parser
+  }
+  // Check for Load from Pool Instruction
+  else if (INST(15, 11) == 0x9) {
+    ld_pool(inst); // Call load from pool instruction
+  }
+  // Check for Load and Store Instruction (Register)
+  else if ((INST(15, 12) == 0x5)) {
+    load_store_inst(inst); // Call load and store instruction parser
+  }
+  // Check for Load and Store Instruction with Immediate (Word and Byte)
+  else if ((INST(15, 13) == 0x3)) {
+    load_imm_word_inst(inst); // Call load-store with immediate (Word) instruction parser
+  }
+  // Check for Load and Store Instruction with Immediate (Halfword)
+  else if ((INST(15, 13) == 0x4)) {
+    load_imm_half_inst(inst); // Call load-store with immediate (Halfword) instruction parser
+  }
+  // Check for PC Relative Address Generator Instruction
+  else if ((INST(15, 11) == 0x14)) {
+    adr_imm(inst); // Add to PC Relative Register Instruction
+  }
+  // Check for SP Relative Address Generator Instruction
+  else if ((INST(15, 11) == 0x15)) {
+    add_sp_imm(inst); // Add to SP Relative Register Instruction
+  }
+  // Check for 16-bit Miscellaneous Instruction
+  else if ((INST(15, 12) == 0xB)) {
+    misc_inst(inst); // Call miscellaneous instruction parser
+  }
+  // Check for Multiple registers Store and Load Instruction
+  else if ((INST(15, 12) == 0xC)) {
+    load_store_mul_inst(inst); // Call multiple load and store instruction parser
+  }
+  // Check for Conditional Branch Instruction
+  else if ((INST(15, 12) == 0xD)) {
+    cond_branch_inst(inst); // Call conditional branch instrucion parser
   }
   else if (INST(15, 11) == 0x1C) {
     b_unconditional(inst);
@@ -80,6 +77,10 @@ void process(uint16_t inst)
     inst32 = ((uint32_t) inst << 16) | ((uint32_t) inst2);
     if (extract16_(inst2, 14) && extract16_(inst2, 12))
       bl(inst32);
+  }
+  // Invalid Instruction
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
   }
 }
 
