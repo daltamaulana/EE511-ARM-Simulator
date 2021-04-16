@@ -246,11 +246,9 @@ void load_store_inst(uint16_t inst) {
 void load_imm_word_inst(uint16_t inst) {
   if (INST(12, 11) == 0x0) {
     str_imm(inst);
-    printf("[INST] Store with 5-bit immediate\n");
   }
   else if (INST(12, 11) == 0x1) {
     ldr_imm(inst);
-    printf("[INST] Load with 5-bit immediate\n");
   }
   else if (INST(12, 11) == 0x2) {
     strb_imm(inst);
@@ -417,7 +415,6 @@ void lsr_imm(uint16_t inst)
 {
   // Declare local variables
   uint32_t imm5 = (INST(10, 6) == 0) ? 32 : zeroExtend32(INST(10, 6));
-  // uint32_t imm5 = zeroExtend32(INST(10, 6)); //NOTE: Original version
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
   uint32_t reg_data;
@@ -446,7 +443,6 @@ void asr_imm(uint16_t inst)
 {
   // Declare local variables
   uint32_t imm5 = (INST(10, 6) == 0) ? 32 : zeroExtend32(INST(10, 6));
-  // uint32_t imm5 = zeroExtend32(INST(10, 6)); //NOTE: Original version
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
   uint32_t reg_data;
@@ -505,8 +501,18 @@ void add_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(unsigned_sum, 31);
   APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if ((UINT32_MAX == unsigned_sum) && ((unsigned_sum - u_rm_data) != u_rn_data)) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if ((INT32_MAX == signed_sum) && ((signed_sum - s_rm_data) != s_rn_data)) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Sub Register Instruction
@@ -568,8 +574,18 @@ void add_imm_3(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(unsigned_sum, 31);
   APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if ((UINT32_MAX == unsigned_sum) && ((unsigned_sum - u_rn_data) != imm3)) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if ((INT32_MAX == signed_sum) && ((signed_sum - s_rn_data) != (int32_t)imm3)) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Sub 3-bit Immediate Instruction
@@ -611,8 +627,8 @@ void move_imm(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(imm8, 31);
   APSR.Z = (imm8 == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Compare Immediate Operation
@@ -666,8 +682,18 @@ void add_imm_8(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(unsigned_sum, 31);
   APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if ((UINT32_MAX == unsigned_sum) && ((unsigned_sum - u_rn_data) != imm8)) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if ((INT32_MAX == signed_sum) && ((signed_sum - s_rn_data) != (int32_t)imm8)) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Sub 8-bit Immediate Instruction
@@ -721,8 +747,8 @@ void and_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Bitwise XOR Instruction
@@ -748,8 +774,8 @@ void xor_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Logical Shift Left (Register) Instruction
@@ -768,8 +794,9 @@ void lsl_reg(uint16_t inst)
   rn_data = R[rdn];
 
   // Performs shifting operation
+  result = (rn_data << extract32(rm_data, 7, 0)-1);
   carry_out = extract32_(rn_data, 31);
-  result = (rn_data << rm_data);
+  result = (rn_data << 1);
 
   // Write data to register
   R[rdn] = result;
@@ -777,8 +804,8 @@ void lsl_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = carry_out;
+  APSR.V = APSR.V;
 }
 
 // Logical Shift Right (Register) Instruction
@@ -807,8 +834,8 @@ void lsr_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = carry_out;
+  APSR.V = APSR.V;
 }
 
 // Arithmetic Shift Right (Register) Instruction
@@ -838,8 +865,8 @@ void asr_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = carry_out;
+  APSR.V = APSR.V;
 }
 
 // Add with Carry Instruction
@@ -875,8 +902,18 @@ void add_carry(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(unsigned_sum, 31);
   APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if ((UINT32_MAX == unsigned_sum) && ((unsigned_sum - u_rn_data) != (u_rm_data + APSR.C))) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if ((INT32_MAX == signed_sum) && ((signed_sum - s_rn_data) != (s_rm_data + APSR.C))) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Add with Carry Instruction
@@ -952,8 +989,8 @@ void tst_and(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Reverse Substract (Register) Instruction
@@ -1006,22 +1043,43 @@ void cmn_reg(uint16_t inst) {
   // Declare local variables
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rn = zeroExtend32(INST(2, 0));
-  uint32_t rm_data;
-  uint32_t rn_data;
-  uint32_t result;
+
+  // Unsigned data variable
+  uint32_t u_rm_data;
+  uint32_t u_rn_data;
+  uint32_t unsigned_sum;
+  // Signed data variable
+  int32_t s_rm_data;
+  int32_t s_rn_data;
+  int32_t signed_sum;
 
   // Read data from register
-  rm_data = R[rm];
-  rn_data = R[rn];
+  // Unsigned data
+  u_rm_data = R[rm];
+  u_rn_data = R[rn];
+  // Signed data
+  s_rm_data = R[rm];
+  s_rn_data = R[rn];
 
-  // Sub operation
-  result = rn_data + rm_data; // Two's complement addition
+  // Add operation
+  unsigned_sum = u_rm_data + u_rn_data; // Unsigned add
+  signed_sum = s_rm_data + s_rn_data; // Signed add
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(result, 31);
-  APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.N = extract32_(unsigned_sum, 31);
+  APSR.Z = (unsigned_sum == 0) ? 1 : 0;
+  // Carry out checking
+  if ((UINT32_MAX == unsigned_sum) && ((unsigned_sum - u_rn_data) != u_rm_data)) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if ((INT32_MAX == signed_sum) && ((signed_sum - s_rn_data) != s_rm_data)) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Logical OR (Register) Instruction
@@ -1046,8 +1104,8 @@ void orr_reg(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Multiply (Register) Instruction
@@ -1098,7 +1156,7 @@ void bic_reg(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.C = APSR.C;
   APSR.V = APSR.V;
 }
 
@@ -1122,7 +1180,7 @@ void mvn_reg(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.C = APSR.C;
   APSR.V = APSR.V;
 }
 
@@ -1164,8 +1222,18 @@ void add_reg_2(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(unsigned_sum, 31);
   APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if ((UINT32_MAX == unsigned_sum) && ((unsigned_sum - u_rn_data) != u_rm_data)) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if ((INT32_MAX == signed_sum) && ((signed_sum - s_rn_data) != s_rm_data)) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Compare (Register 2) Instruction
@@ -1209,12 +1277,6 @@ void mov_reg(uint16_t inst) {
 
   // Write data to register
   R[rd] = result;
-
-  // Write value to APSR (status register)
-  APSR.N = extract32_(result, 31);
-  APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V;
 }
 
 // Branch Exchange Instruction
@@ -1503,7 +1565,6 @@ void ldr_imm(uint16_t inst) {
 
   // Read data from memory
   rt_data = read_word(addr_offset);
-  printf("[Debug] RT Data: %d\n", rt_data); //NOTE: Remove this
 
   // Write data to register
   R[rt] = rt_data;
@@ -1978,16 +2039,53 @@ void load_mul(uint16_t inst) { //NOTE: Correct me!
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void b_conditional(uint16_t inst) {
   // Declare Local Variables
+  uint32_t cond = zeroExtend32(INST(11, 8));
   uint32_t imm8 = zeroExtend32((INST(7, 0) << 1)); // Add 1 zero to LSB and extend
   uint32_t imm32;
 
   // Calculate imm32 value
   imm32 = sign_extend(imm8, 9);
-  printf("[Debug] imm32 value: %d\n", imm32);
+
+  // Check condition code
+  switch (extract32(cond, 3, 1)) {
+    case 0: // Equal condition checking (000)
+      branch = (APSR.Z == 1);
+      break;
+    case 1: // Carry set checking (001)
+      branch = (APSR.C == 1);
+      break;
+    case 2: // Negative condition checking (010)
+      branch = (APSR.N == 1);
+      break;
+    case 3: // Overflow condition checking (011)
+      branch = (APSR.V == 1);
+      break;
+    case 4: // Unsigned higher condition checking (100)
+      branch = (APSR.C == 1) && (APSR.Z == 0);
+      break;
+    case 5: // Signed greater equal condition checking (101)
+      branch = (APSR.N == APSR.V);
+      break;
+    case 6: // Signed greater condition checking (110)
+      branch = (APSR.N == APSR.V) && (APSR.Z == 0);
+      break;
+    case 7: // Unconditional condition checking (111)
+      branch = 1;
+      break;
+    default:
+      branch = 0;
+      break;
+  }
+
+  // Invert condition checking
+  if ((extract32_(cond, 0) == 1) && (cond != 15)) {
+    branch = !branch;
+  }
 
   // Write new PC value
-  branch = 1;
-  PC = (PC + imm32) & 0xFFFFFFFE;
+  if (branch) {
+    PC = (PC + imm32) & 0xFFFFFFFE;
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
