@@ -121,10 +121,10 @@ void imm_inst(uint16_t inst) {
   else if (INST(13, 11) == 0x5) {
     comp_imm(inst);
   }
-  else if (INST(13, 11) == 0x5) {
+  else if (INST(13, 11) == 0x6) {
     add_imm_8(inst);
   }
-  else if (INST(13, 11) == 0x5) {
+  else if (INST(13, 11) == 0x7) {
     sub_imm_8(inst);
   }
   else {
@@ -246,9 +246,11 @@ void load_store_inst(uint16_t inst) {
 void load_imm_word_inst(uint16_t inst) {
   if (INST(12, 11) == 0x0) {
     str_imm(inst);
+    printf("[INST] Store with 5-bit immediate\n");
   }
   else if (INST(12, 11) == 0x1) {
     ldr_imm(inst);
+    printf("[INST] Load with 5-bit immediate\n");
   }
   else if (INST(12, 11) == 0x2) {
     strb_imm(inst);
@@ -414,7 +416,8 @@ void lsl_imm(uint16_t inst)
 void lsr_imm(uint16_t inst)
 {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = (INST(10, 6) == 0) ? 32 : zeroExtend32(INST(10, 6));
+  // uint32_t imm5 = zeroExtend32(INST(10, 6)); //NOTE: Original version
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
   uint32_t reg_data;
@@ -442,7 +445,8 @@ void lsr_imm(uint16_t inst)
 void asr_imm(uint16_t inst)
 {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = (INST(10, 6) == 0) ? 32 : zeroExtend32(INST(10, 6));
+  // uint32_t imm5 = zeroExtend32(INST(10, 6)); //NOTE: Original version
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
   uint32_t reg_data;
@@ -1250,7 +1254,7 @@ void bl_exchange(uint16_t inst) {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void ld_pool(uint16_t inst) {
   uint32_t rt = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t mem_addr;
 
   // Calculate memory address
@@ -1462,7 +1466,7 @@ void ldsrh_reg(uint16_t inst) {
 // Store Word (Immediate) Instruction
 void str_imm(uint16_t inst) {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = zeroExtend32((INST(10, 6)) << 2); // Append 2 zeros at imm5 LSB and extend
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rt = zeroExtend32(INST(2, 0));
   uint32_t rn_data;
@@ -1483,7 +1487,7 @@ void str_imm(uint16_t inst) {
 // Load Word (Immediate) Instruction
 void ldr_imm(uint16_t inst) {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = zeroExtend32((INST(10, 6) << 2)); // Append 2 zeros at LSB and extend
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rt = zeroExtend32(INST(2, 0));
   uint32_t rm_data;
@@ -1499,6 +1503,7 @@ void ldr_imm(uint16_t inst) {
 
   // Read data from memory
   rt_data = read_word(addr_offset);
+  printf("[Debug] RT Data: %d\n", rt_data); //NOTE: Remove this
 
   // Write data to register
   R[rt] = rt_data;
@@ -1552,7 +1557,7 @@ void ldrb_imm(uint16_t inst) {
 // Store Halfword (Immediate) Instruction
 void strh_imm(uint16_t inst) {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = zeroExtend32((INST(10, 6) < 1)); // Append 1 zero at LSB and extend
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rt = zeroExtend32(INST(2, 0));
   uint32_t rn_data;
@@ -1573,7 +1578,7 @@ void strh_imm(uint16_t inst) {
 // Load Halfword (Immediate) Instruction
 void ldrh_imm(uint16_t inst) {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = zeroExtend32((INST(10, 6) < 1)); // Append 1 zero at LSB and extend 
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rt = zeroExtend32(INST(2, 0));
   uint32_t rm_data;
@@ -1598,7 +1603,7 @@ void ldrh_imm(uint16_t inst) {
 void str_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rt = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t rn_data;
   uint32_t rt_data;
   uint32_t addr_offset;
@@ -1618,7 +1623,7 @@ void str_sp_imm(uint16_t inst) {
 void ldr_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rt = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t rn_data;
   uint32_t rt_data;
   uint32_t addr_offset;
@@ -1643,7 +1648,7 @@ void ldr_sp_imm(uint16_t inst) {
 void adr_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rd = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1657,7 +1662,7 @@ void adr_imm(uint16_t inst) {
 void add_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rd = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1674,7 +1679,7 @@ void add_sp_imm(uint16_t inst) {
 void add_sp_imm_2(uint16_t inst) {
   // Declare local variables
   uint32_t rd = 13;
-  uint32_t imm7 = zeroExtend32(INST(6, 0));
+  uint32_t imm7 = zeroExtend32((INST(6, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1688,7 +1693,7 @@ void add_sp_imm_2(uint16_t inst) {
 void sub_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rd = 13;
-  uint32_t imm7 = zeroExtend32(INST(6, 0));
+  uint32_t imm7 = zeroExtend32((INST(6, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1776,17 +1781,17 @@ void push_reg(uint16_t inst) {
   int i;
   uint32_t mem_addr;
   uint32_t reg_count;
-  uint32_t pc_write = zeroExtend32(INST_(8));
-  uint32_t reg_list = zeroExtend32(INST(7, 0));
+  uint32_t lr_write = zeroExtend32(INST_(8));
+  uint32_t reg_list = zeroExtend32(INST(7, 0)) | (lr_write << 14);
 
   // Calculate bit count value
-  reg_count = (pc_write == 1) ? bit_count(reg_list, 8)+1 : bit_count(reg_list, 8);
+  reg_count = bit_count(reg_list, 16);
 
   // Calculate memory address
   mem_addr = SP - (4 * reg_count);
 
-  // Store general register value
-  for (i=0; i<8; i++) {
+  // Store register value
+  for (i=0; i<16; i++) {
     // Check bit
     if (extract32_(reg_list, i) == 1) {
       // Write to memory
@@ -1794,12 +1799,6 @@ void push_reg(uint16_t inst) {
       // Increment address
       mem_addr += 4;
     }
-  }
-
-  // Store link register value
-  if (pc_write == 1) {
-    // Write to memory
-    write_word(mem_addr, R[i]);
   }
 
   // Update stack pointer
@@ -1882,10 +1881,10 @@ void pop_reg(uint16_t inst) {
   uint32_t mem_addr;
   uint32_t reg_count;
   uint32_t pc_load = zeroExtend32(INST_(8));
-  uint32_t reg_list = zeroExtend32(INST(7, 0));
+  uint32_t reg_list = zeroExtend32(INST(7, 0)) | (pc_load << 15);
 
   // Calculate bit count value
-  reg_count = (pc_load == 1) ? bit_count(reg_list, 8)+1 : bit_count(reg_list, 8);
+  reg_count = bit_count(reg_list, 16);
 
   // Calculate memory address
   mem_addr = SP;
@@ -1902,7 +1901,7 @@ void pop_reg(uint16_t inst) {
   }
 
   // Check for PC load variable
-  if (pc_load == 1) {
+  if (extract32_(reg_list, 15) == 1) {
     PC = read_word(mem_addr);
   }
 
@@ -1914,7 +1913,7 @@ void pop_reg(uint16_t inst) {
 //                  Define Function for Multiple Store and Load Instruction                    //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Store Multiple Register Instruction
-void store_mul(uint16_t inst) {
+void store_mul(uint16_t inst) { // NOTE: Correct me!
   // Declare local variables
   int i;
   uint32_t mem_addr;
@@ -1944,7 +1943,7 @@ void store_mul(uint16_t inst) {
 }
 
 // Load Multiple Register Instruction
-void load_mul(uint16_t inst) {
+void load_mul(uint16_t inst) { //NOTE: Correct me!
   // Declare local variables
   int i;
   uint32_t wback;
@@ -1979,14 +1978,16 @@ void load_mul(uint16_t inst) {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void b_conditional(uint16_t inst) {
   // Declare Local Variables
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 1)); // Add 1 zero to LSB and extend
   uint32_t imm32;
 
   // Calculate imm32 value
-  imm32 = sign_extend((imm8 << 1), 9);
+  imm32 = sign_extend(imm8, 9);
+  printf("[Debug] imm32 value: %d\n", imm32);
 
   // Write new PC value
-  PC = PC + imm32;
+  branch = 1;
+  PC = (PC + imm32) & 0xFFFFFFFE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
