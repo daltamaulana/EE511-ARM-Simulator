@@ -1974,7 +1974,7 @@ void pop_reg(uint16_t inst) {
 //                  Define Function for Multiple Store and Load Instruction                    //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Store Multiple Register Instruction
-void store_mul(uint16_t inst) { // NOTE: Correct me!
+void store_mul(uint16_t inst) {
   // Declare local variables
   int i;
   uint32_t mem_addr;
@@ -2004,7 +2004,7 @@ void store_mul(uint16_t inst) { // NOTE: Correct me!
 }
 
 // Load Multiple Register Instruction
-void load_mul(uint16_t inst) { //NOTE: Correct me!
+void load_mul(uint16_t inst) {
   // Declare local variables
   int i;
   uint32_t wback;

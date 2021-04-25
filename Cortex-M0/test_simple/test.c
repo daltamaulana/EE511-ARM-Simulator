@@ -11,12 +11,16 @@ int main(void)
 {
   // Declare variable
   int i;
-  int a = 100;
-  int count = 0;
+  int a = 1000;
+  int result = 0;
+  int x = 1;
+  int y = 2;
 
   // Loop
   for (i=0; i<a; i++) {
-    count += 1;
+    result += x + y + 1;
+    x = x * 2;
+    y = y * 2;
   }
   
   return 0;
