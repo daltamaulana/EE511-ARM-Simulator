@@ -54,6 +54,38 @@ int main(void) {
   asm volatile("sub r4, r4, r5");
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
+  //                               Data Processing Instruction Test                              //
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Assign value to variable
+  a = 0b10101010;
+  b = 0b01010101;
+  c = 0xF0F0F0F0;
+  d = 0x2;
+  e = 0xFFFFFF56;
+
+  // Load value to register
+  asm volatile("DATA: mov r4, %[value]" :: [value] "r" (a));
+  asm volatile("mov r5, %[value]" :: [value] "r" (b));
+  asm volatile("mov r6, %[value]" :: [value] "r" (c));
+  asm volatile("mov r7, %[value]" :: [value] "r" (d));
+  asm volatile("mov r3, %[value]" :: [value] "r" (e));
+  asm volatile (
+    "and r2, r4, r5\n\t"
+    "eor r2, r4, r5\n\t"
+    "lsl r2, r7, r4\n\t"
+    "lsr r2, r7, r4\n\t"
+    "lsr r2, r7, r6\n\t"
+    "ror r2, r7, r4\n\t"
+    "tst r4, r5\n\t"
+    "rsb r2, r4, #0\n\t"
+    "cmp r4, r4\n\t"
+    "cmn r3, r4\n\t"
+    "orr r2, r4, r5\n\t"
+    "mul r2, r4, r7\n\t"
+    "mvn r2, r4\n\t"
+  );
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
   //                                   Branch Instruction Test                                   //
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // Assign value to variable
