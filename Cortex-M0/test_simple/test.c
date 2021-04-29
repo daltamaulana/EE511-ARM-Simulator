@@ -35,7 +35,7 @@ int main(void) {
   asm volatile("mov r4, %[value]" :: [value] "r" (c));
   asm volatile("mov r5, %[value]" :: [value] "r" (d));
   asm volatile("add r4, r4, r5");
-  asm volatile("b SUB");
+  
   /////////////////////////////////////////////////////////////////////////////////////////////////
   //                                Substraction Instruction Test                                //
   /////////////////////////////////////////////////////////////////////////////////////////////////
