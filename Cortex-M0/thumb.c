@@ -19,7 +19,7 @@ void process(uint16_t inst)
 
   // Decode Instruction Set
   if (0) {
-  
+    // Do nothing
   }
   // Check for Immediate Instruction
   else if (INST(15, 14) == 0x0) {
@@ -506,19 +506,21 @@ void add_reg(uint16_t inst)
   R[rd] = result;
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(result, 31);
-  APSR.Z = (result == 0) ? 1 : 0;
-  // Carry out checking
-  if (unsigned_sum != (uint64_t)result) {
-    APSR.C = 1;
-  } else {
-    APSR.C = 0;
-  }
-  // Overflow checking
-  if (signed_sum != (int64_t)result) {
-    APSR.V = 1;
-  } else {
-    APSR.V = 0;
+  if (rd != 15) {
+    APSR.N = extract32_(result, 31);
+    APSR.Z = (result == 0) ? 1 : 0;
+    // Carry out checking
+    if (unsigned_sum != (uint64_t)result) {
+      APSR.C = 1;
+    } else {
+      APSR.C = 0;
+    }
+    // Overflow checking
+    if (signed_sum != (int64_t)result) {
+      APSR.V = 1;
+    } else {
+      APSR.V = 0;
+    }
   }
 }
 
