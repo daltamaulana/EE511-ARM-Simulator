@@ -19,58 +19,55 @@ void process(uint16_t inst)
 
   // Decode Instruction Set
   if (0) {
-    // Check for Immediate Instruction
-    if (INST(15, 14) == 0x0) {
-      imm_inst(inst); // Call immediate instruction parser
-    }
-    // Check for Data Processing Instruction
-    else if (INST(15, 10) == 0x10) {
-      data_proc_inst(inst); // Call data processing instruction parser
-    }
-    // Check for Special Data and Branch Instruction
-    else if (INST(15, 10) == 0x11) {
-      spec_data_inst(inst); // Call special data - branch instruction parser
-    }
-    // Check for Load from Pool Instruction
-    else if (INST(15, 11) == 0x9) {
-      ld_pool(inst); // Call load from pool instruction
-    }
-    // Check for Load and Store Instruction (Register)
-    else if ((INST(15, 12) == 0x5)) {
-      load_store_inst(inst); // Call load and store instruction parser
-    }
-    // Check for Load and Store Instruction with Immediate (Word and Byte)
-    else if ((INST(15, 13) == 0x3)) {
-      load_imm_word_inst(inst); // Call load-store with immediate (Word) instruction parser
-    }
-    // Check for Load and Store Instruction with Immediate (Halfword)
-    else if ((INST(15, 13) == 0x4)) {
-      load_imm_half_inst(inst); // Call load-store with immediate (Halfword) instruction parser
-    }
-    // Check for PC Relative Address Generator Instruction
-    else if ((INST(15, 11) == 0x14)) {
-      adr_imm(inst); // Add to PC Relative Register Instruction
-    }
-    // Check for SP Relative Address Generator Instruction
-    else if ((INST(15, 11) == 0x15)) {
-      add_sp_imm(inst); // Add to SP Relative Register Instruction
-    }
-    // Check for 16-bit Miscellaneous Instruction
-    else if ((INST(15, 12) == 0xB)) {
-      misc_inst(inst); // Call miscellaneous instruction parser
-    }
-    // Check for Multiple registers Store and Load Instruction
-    else if ((INST(15, 12) == 0xC)) {
-      load_store_mul_inst(inst); // Call multiple load and store instruction parser
-    }
-    // Check for Conditional Branch Instruction
-    else if ((INST(15, 12) == 0xD)) {
-      cond_branch_inst(inst); // Call conditional branch instrucion parser
-    }
-    // Invalid Instruction
-    else {
-      printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
-    }
+  
+  }
+  // Check for Immediate Instruction
+  else if (INST(15, 14) == 0x0) {
+    imm_inst(inst); // Call immediate instruction parser
+  }
+  // Check for Data Processing Instruction
+  else if (INST(15, 10) == 0x10) {
+    data_proc_inst(inst); // Call data processing instruction parser
+  }
+  // Check for Special Data and Branch Instruction
+  else if (INST(15, 10) == 0x11) {
+    spec_data_inst(inst); // Call special data - branch instruction parser
+  }
+  // Check for Load from Pool Instruction
+  else if (INST(15, 11) == 0x9) {
+    ld_pool(inst); // Call load from pool instruction
+  }
+  // Check for Load and Store Instruction (Register)
+  else if ((INST(15, 12) == 0x5)) {
+    load_store_inst(inst); // Call load and store instruction parser
+  }
+  // Check for Load and Store Instruction with Immediate (Word and Byte)
+  else if ((INST(15, 13) == 0x3)) {
+    load_imm_word_inst(inst); // Call load-store with immediate (Word) instruction parser
+  }
+  // Check for Load and Store Instruction with Immediate (Halfword)
+  else if ((INST(15, 13) == 0x4)) {
+    load_imm_half_inst(inst); // Call load-store with immediate (Halfword) instruction parser
+  }
+  // Check for PC Relative Address Generator Instruction
+  else if ((INST(15, 11) == 0x14)) {
+    adr_imm(inst); // Add to PC Relative Register Instruction
+  }
+  // Check for SP Relative Address Generator Instruction
+  else if ((INST(15, 11) == 0x15)) {
+    add_sp_imm(inst); // Add to SP Relative Register Instruction
+  }
+  // Check for 16-bit Miscellaneous Instruction
+  else if ((INST(15, 12) == 0xB)) {
+    misc_inst(inst); // Call miscellaneous instruction parser
+  }
+  // Check for Multiple registers Store and Load Instruction
+  else if ((INST(15, 12) == 0xC)) {
+    load_store_mul_inst(inst); // Call multiple load and store instruction parser
+  }
+  // Check for Conditional Branch Instruction
+  else if ((INST(15, 12) == 0xD)) {
+    cond_branch_inst(inst); // Call conditional branch instrucion parser
   }
   else if (INST(15, 11) == 0x1C) {
     b_unconditional(inst);
@@ -80,6 +77,10 @@ void process(uint16_t inst)
     inst32 = ((uint32_t) inst << 16) | ((uint32_t) inst2);
     if (extract16_(inst2, 14) && extract16_(inst2, 12))
       bl(inst32);
+  }
+  // Invalid Instruction
+  else {
+    printf("[Error] %x is an invalid instruction! Please check the instruction!\n", inst);
   }
 }
 
@@ -120,10 +121,10 @@ void imm_inst(uint16_t inst) {
   else if (INST(13, 11) == 0x5) {
     comp_imm(inst);
   }
-  else if (INST(13, 11) == 0x5) {
+  else if (INST(13, 11) == 0x6) {
     add_imm_8(inst);
   }
-  else if (INST(13, 11) == 0x5) {
+  else if (INST(13, 11) == 0x7) {
     sub_imm_8(inst);
   }
   else {
@@ -391,20 +392,22 @@ void lsl_imm(uint16_t inst)
   uint32_t rd = zeroExtend32(INST(2, 0));
   uint32_t reg_data;
   uint32_t carry_out;
+  uint32_t result;
 
   // Read data from register
   reg_data = R[rm];
 
   // Performs shifting operation
+  result = (reg_data << imm5-1);
   carry_out = extract32_(reg_data, 31);
-  reg_data = (reg_data << imm5);
+  result = (result << 1);
 
   // Write data to register
-  R[rd] = reg_data;
+  R[rd] = result;
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(reg_data, 31);
-  APSR.Z = (reg_data == 0) ? 1 : 0;
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
   APSR.C = (imm5 > 0) ? carry_out : APSR.C;
   APSR.V = APSR.V;
 }
@@ -413,7 +416,7 @@ void lsl_imm(uint16_t inst)
 void lsr_imm(uint16_t inst)
 {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = (INST(10, 6) == 0) ? 32 : zeroExtend32(INST(10, 6));
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
   uint32_t reg_data;
@@ -441,7 +444,7 @@ void lsr_imm(uint16_t inst)
 void asr_imm(uint16_t inst)
 {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = (INST(10, 6) == 0) ? 32 : zeroExtend32(INST(10, 6));
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
   uint32_t reg_data;
@@ -476,11 +479,13 @@ void add_reg(uint16_t inst)
   // Unsigned data variable
   uint32_t u_rm_data;
   uint32_t u_rn_data;
-  uint32_t unsigned_sum;
+  uint64_t unsigned_sum;
   // Signed data variable
   int32_t s_rm_data;
   int32_t s_rn_data;
-  int32_t signed_sum;
+  int64_t signed_sum;
+  // Result variable
+  uint32_t result;
 
   // Read data from register
   // Unsigned data
@@ -491,17 +496,30 @@ void add_reg(uint16_t inst)
   s_rn_data = R[rn];
 
   // Add operation
-  unsigned_sum = u_rm_data + u_rn_data; // Unsigned add
+  unsigned_sum = (uint64_t)u_rm_data + (uint64_t)u_rn_data; // Unsigned add
   signed_sum = s_rm_data + s_rn_data; // Signed add
 
+  // Truncate summation result
+  result = (int32_t) unsigned_sum;
+  
   // Write data to register
-  R[rd] = unsigned_sum;
+  R[rd] = result;
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(unsigned_sum, 31);
-  APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  // Carry out checking
+  if (unsigned_sum != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sum != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Sub Register Instruction
@@ -511,17 +529,31 @@ void sub_reg(uint16_t inst)
   uint32_t rm = zeroExtend32(INST(8, 6));
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
-  uint32_t rm_data;
-  uint32_t rn_data;
+  // Unsigned data variable
+  uint32_t u_rm_data;
+  uint32_t u_rn_data;
+  uint64_t unsigned_sub;
+  // Signed data variable
+  int32_t s_rm_data;
+  int32_t s_rn_data;
+  int64_t signed_sub;
+  // Result variable
   uint32_t result;
 
   // Read data from register
   // Unsigned data
-  rm_data = R[rm];
-  rn_data = R[rn];
+  u_rm_data = R[rm];
+  u_rn_data = R[rn];
+  // Signed data
+  s_rm_data = R[rm];
+  s_rn_data = R[rn];
 
   // Sub operation
-  result = rn_data + ~(rm_data) + 1; // Two's complement substraction
+  unsigned_sub = (uint64_t)u_rn_data + (uint64_t)(~u_rm_data) + 1;
+  signed_sub = s_rn_data + ~(s_rm_data) + 1;
+
+  // Truncate summation result
+  result = (int32_t) unsigned_sub;
 
   // Write data to register
   R[rd] = result;
@@ -529,8 +561,18 @@ void sub_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sub != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sub != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Add 3-bit Immediate Instruction
@@ -542,10 +584,12 @@ void add_imm_3(uint16_t inst)
   uint32_t rd = zeroExtend32(INST(2, 0));
   // Unsigned data variable
   uint32_t u_rn_data;
-  uint32_t unsigned_sum;
+  uint64_t unsigned_sum;
   // Signed data variable
   int32_t s_rn_data;
-  int32_t signed_sum;
+  int64_t signed_sum;
+  // Result variable
+  uint32_t result;
 
   // Read data from register
   // Unsigned data
@@ -554,17 +598,30 @@ void add_imm_3(uint16_t inst)
   s_rn_data = R[rn];
 
   // Add operation
-  unsigned_sum = u_rn_data + imm3; // Unsigned add
+  unsigned_sum = (uint64_t)u_rn_data + (uint64_t)imm3; // Unsigned add
   signed_sum = s_rn_data + (int32_t)imm3; // Signed add
 
+  // Truncate summation result
+  result = (int32_t) unsigned_sum;
+
   // Write data to register
-  R[rd] = unsigned_sum;
+  R[rd] = result;
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(unsigned_sum, 31);
-  APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  // Carry out checking
+  if (unsigned_sum != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sum != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Sub 3-bit Immediate Instruction
@@ -574,14 +631,25 @@ void sub_imm_3(uint16_t inst)
   uint32_t imm3 = zeroExtend32(INST(8, 6));
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
-  uint32_t rn_data;
+  // Unsigned data variable
+  uint32_t u_rn_data;
+  uint64_t unsigned_sub;
+  // Signed data variable
+  uint32_t s_rn_data;
+  int64_t signed_sub;
+  // Result variable
   uint32_t result;
 
   // Read data from register
-  rn_data = R[rn];
+  u_rn_data = R[rn];
+  s_rn_data = R[rn];
 
   // Sub operation
-  result = rn_data + ~(imm3) + 1; // Two's complement substraction
+  unsigned_sub = (uint64_t)u_rn_data + (uint64_t)(~imm3) + 1; 
+  signed_sub = u_rn_data + ~(imm3) + 1; 
+  
+  // Truncate summation result
+  result = (int32_t) unsigned_sub;
 
   // Write data to register
   R[rd] = result;
@@ -589,8 +657,18 @@ void sub_imm_3(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sub != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sub != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Move Immediate Operation
@@ -606,8 +684,8 @@ void move_imm(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(imm8, 31);
   APSR.Z = (imm8 == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Compare Immediate Operation
@@ -616,20 +694,41 @@ void comp_imm(uint16_t inst)
   // Declare local variables
   uint32_t imm8 = zeroExtend32(INST(7, 0));
   uint32_t rn = zeroExtend32(INST(10, 8));
-  uint32_t rn_data;
+  // Unsigned data variable
+  uint32_t u_rn_data;
+  uint64_t unsigned_sub;
+  // Signed data variable
+  uint32_t s_rn_data;
+  int64_t signed_sub;
+  // Result variable
   uint32_t result;
 
-  // Read value from register
-  rn_data = R[rn];
+  // Read data from register
+  u_rn_data = R[rn];
+  s_rn_data = R[rn];
 
-  // Perform substraction
-  result = rn_data + ~(imm8) + 1;
+  // Sub operation
+  unsigned_sub = (uint64_t)u_rn_data + (uint64_t)(~imm8) + 1; 
+  signed_sub = s_rn_data + ~(imm8) + 1; 
+
+  // Truncate summation result
+  result = (int32_t) unsigned_sub;
 
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sub != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sub != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Add 8-bit Immediate Instruction
@@ -640,10 +739,12 @@ void add_imm_8(uint16_t inst)
   uint32_t imm8 = zeroExtend32(INST(7, 0));
   // Unsigned data variable
   uint32_t u_rn_data;
-  uint32_t unsigned_sum;
+  uint64_t unsigned_sum;
   // Signed data variable
   int32_t s_rn_data;
-  int32_t signed_sum;
+  int64_t signed_sum;
+  // Result variable
+  uint32_t result;
 
   // Read data from register
   // Unsigned data
@@ -652,17 +753,30 @@ void add_imm_8(uint16_t inst)
   s_rn_data = R[rdn];
 
   // Add operation
-  unsigned_sum = u_rn_data + imm8; // Unsigned add
+  unsigned_sum = (uint64_t)u_rn_data + (uint64_t)imm8; // Unsigned add
   signed_sum = s_rn_data + (int32_t)imm8; // Signed add
 
+  // Truncate summation result
+  result = (int32_t) unsigned_sum;
+
   // Write data to register
-  R[rdn] = unsigned_sum;
+  R[rdn] = result;
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(unsigned_sum, 31);
-  APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  // Carry out checking
+  if (unsigned_sum != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sum != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Sub 8-bit Immediate Instruction
@@ -671,14 +785,22 @@ void sub_imm_8(uint16_t inst)
   // Declare local variables
   uint32_t rdn = zeroExtend32(INST(10, 8));
   uint32_t imm8 = zeroExtend32(INST(7, 0));
-  uint32_t rn_data;
+  // Unsigned data variable
+  uint32_t u_rn_data;
+  uint64_t unsigned_sub;
+  // Signed data variable
+  uint32_t s_rn_data;
+  int64_t signed_sub;
+  // Result variable
   uint32_t result;
 
   // Read data from register
-  rn_data = R[rdn];
+  u_rn_data = R[rdn];
+  s_rn_data = R[rdn];
 
-  // Add operation
-  result = rn_data + ~(imm8) + 1; // Two's complement substraction
+  // Sub operation
+  unsigned_sub = (uint64_t)u_rn_data + (uint64_t)(~imm8) + 1; 
+  signed_sub = s_rn_data + ~(imm8) + 1;
 
   // Write data to register
   R[rdn] = result;
@@ -686,8 +808,18 @@ void sub_imm_8(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sub != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sub != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -716,8 +848,8 @@ void and_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Bitwise XOR Instruction
@@ -743,8 +875,8 @@ void xor_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Logical Shift Left (Register) Instruction
@@ -763,8 +895,9 @@ void lsl_reg(uint16_t inst)
   rn_data = R[rdn];
 
   // Performs shifting operation
+  result = (rn_data << extract32(rm_data, 7, 0)-1);
   carry_out = extract32_(rn_data, 31);
-  result = (rn_data << rm_data);
+  result = (result << 1);
 
   // Write data to register
   R[rdn] = result;
@@ -772,8 +905,8 @@ void lsl_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = carry_out;
+  APSR.V = APSR.V;
 }
 
 // Logical Shift Right (Register) Instruction
@@ -802,8 +935,8 @@ void lsr_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = carry_out;
+  APSR.V = APSR.V;
 }
 
 // Arithmetic Shift Right (Register) Instruction
@@ -833,8 +966,8 @@ void asr_reg(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = carry_out;
+  APSR.V = APSR.V;
 }
 
 // Add with Carry Instruction
@@ -846,11 +979,13 @@ void add_carry(uint16_t inst)
   // Unsigned data variable
   uint32_t u_rm_data;
   uint32_t u_rn_data;
-  uint32_t unsigned_sum;
+  uint64_t unsigned_sum;
   // Signed data variable
   int32_t s_rm_data;
   int32_t s_rn_data;
-  int32_t signed_sum;
+  int64_t signed_sum;
+  // Result variable
+  uint32_t result;
 
   // Read data from register
   // Unsigned data
@@ -861,17 +996,30 @@ void add_carry(uint16_t inst)
   s_rn_data = R[rdn];
 
   // Add operation
-  unsigned_sum = u_rm_data + u_rn_data + APSR.C; // Unsigned add
+  unsigned_sum = (uint64_t)u_rm_data + (uint64_t)u_rn_data + APSR.C; // Unsigned add
   signed_sum = s_rm_data + s_rn_data + APSR.C; // Signed add
 
+  // Truncate summation result
+  result = (int32_t) unsigned_sum;
+
   // Write data to register
-  R[rdn] = unsigned_sum;
+  R[rdn] = result;
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(unsigned_sum, 31);
-  APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  // Carry out checking
+  if (unsigned_sum != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sum != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Add with Carry Instruction
@@ -880,16 +1028,31 @@ void sub_carry(uint16_t inst)
   // Declare local variables
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rdn = zeroExtend32(INST(2, 0));
-  uint32_t rm_data;
-  uint32_t rn_data;
+  // Unsigned data variable
+  uint32_t u_rm_data;
+  uint32_t u_rn_data;
+  uint64_t unsigned_sub;
+  // Signed data variable
+  int32_t s_rm_data;
+  int32_t s_rn_data;
+  int64_t signed_sub;
+  // Result variable
   uint32_t result;
 
   // Read data from register
-  rm_data = R[rm];
-  rn_data = R[rdn];
+  // Unsigned data
+  u_rm_data = R[rm];
+  u_rn_data = R[rdn];
+  // Signed data
+  s_rm_data = R[rm];
+  s_rn_data = R[rdn];
 
   // Sub operation
-  result = rn_data + ~(rm_data) + APSR.C; // Two's complement substraction
+  unsigned_sub = (uint64_t)u_rn_data + (uint64_t)(~u_rm_data) + APSR.C;
+  signed_sub = s_rn_data + ~(s_rm_data) + APSR.C;
+  
+  // Truncate summation result
+  result = (int32_t) unsigned_sub;
 
   // Write data to register
   R[rdn] = result;
@@ -897,8 +1060,18 @@ void sub_carry(uint16_t inst)
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sub != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sub != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Rotate Right (Register) Instruction
@@ -918,7 +1091,7 @@ void ror_reg(uint16_t inst)
   rn_data = R[rdn];
 
   // Rotate operation
-  temp = extract32(rn_data, 0, (rm_data-1));
+  temp = extract32(rn_data, (rm_data-1), 0);
   temp = (temp << (32-rm_data));
   result = (rn_data >> rm_data);
   result = result ^ temp;
@@ -947,8 +1120,8 @@ void tst_and(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Reverse Substract (Register) Instruction
@@ -956,21 +1129,42 @@ void rsb_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rd = zeroExtend32(INST(2, 0));
-  uint32_t rn_data;
+  // Unsigned data variable
+  uint32_t u_rn_data;
+  uint64_t unsigned_sub;
+  // Unsigned data variable
+  int32_t s_rn_data;
+  int64_t signed_sub;
+  // Result variable
   uint32_t imm32 = 0;
   uint32_t result;
 
   // Read data from register
-  rn_data = R[rn];
+  u_rn_data = R[rn];
+  s_rn_data = R[rn];
 
   // Sub operation
-  result = ~(rn_data) + imm32 + 1; // Two's complement substraction
+  unsigned_sub = (uint64_t)(~(u_rn_data)) + (u_int64_t)imm32 + 1;
+  signed_sub = ~(s_rn_data) + imm32 + 1;
+  
+  // Truncate summation result
+  result = (int32_t) unsigned_sub;
 
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sub != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sub != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Compare Register Instruction
@@ -978,22 +1172,47 @@ void cmp_reg(uint16_t inst) {
   // Declare local variables
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rn = zeroExtend32(INST(2, 0));
-  uint32_t rm_data;
-  uint32_t rn_data;
+  // Unsigned data variable
+  uint32_t u_rm_data;
+  uint32_t u_rn_data;
+  uint64_t unsigned_sub;
+  // Signed data variable
+  int32_t s_rm_data;
+  int32_t s_rn_data;
+  int64_t signed_sub;
+  // Result variable
   uint32_t result;
 
   // Read data from register
-  rm_data = R[rm];
-  rn_data = R[rn];
+  // Unsigned data
+  u_rm_data = R[rm];
+  u_rn_data = R[rn];
+  // Signed data
+  s_rm_data = R[rm];
+  s_rn_data = R[rn];
 
   // Sub operation
-  result = rn_data + ~(rm_data) + 1; // Two's complement substraction
+  unsigned_sub = (uint64_t)u_rn_data + (uint64_t)(~u_rm_data) + 1; 
+  signed_sub = s_rn_data + ~(s_rm_data) + 1;
+  
+  // Truncate summation result
+  result = (int32_t) unsigned_sub;
 
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sub != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sub != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Compare Negative Register Instruction
@@ -1001,22 +1220,48 @@ void cmn_reg(uint16_t inst) {
   // Declare local variables
   uint32_t rm = zeroExtend32(INST(5, 3));
   uint32_t rn = zeroExtend32(INST(2, 0));
-  uint32_t rm_data;
-  uint32_t rn_data;
+
+  // Unsigned data variable
+  uint32_t u_rm_data;
+  uint32_t u_rn_data;
+  uint32_t unsigned_sum;
+  // Signed data variable
+  int32_t s_rm_data;
+  int32_t s_rn_data;
+  int32_t signed_sum;
+  // Result variable
   uint32_t result;
 
   // Read data from register
-  rm_data = R[rm];
-  rn_data = R[rn];
+  // Unsigned data
+  u_rm_data = R[rm];
+  u_rn_data = R[rn];
+  // Signed data
+  s_rm_data = R[rm];
+  s_rn_data = R[rn];
 
-  // Sub operation
-  result = rn_data + rm_data; // Two's complement addition
+  // Add operation
+  unsigned_sum = (uint64_t)u_rm_data + (uint64_t)u_rn_data;
+  signed_sum = s_rm_data + s_rn_data;
+
+  // Truncate summation result
+  result = (int32_t) unsigned_sum;
 
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sum != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sum != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Logical OR (Register) Instruction
@@ -1041,8 +1286,8 @@ void orr_reg(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.C = APSR.C;
+  APSR.V = APSR.V;
 }
 
 // Multiply (Register) Instruction
@@ -1093,7 +1338,7 @@ void bic_reg(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.C = APSR.C;
   APSR.V = APSR.V;
 }
 
@@ -1117,7 +1362,7 @@ void mvn_reg(uint16_t inst) {
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
+  APSR.C = APSR.C;
   APSR.V = APSR.V;
 }
 
@@ -1140,6 +1385,8 @@ void add_reg_2(uint16_t inst) {
   int32_t s_rm_data;
   int32_t s_rn_data;
   int32_t signed_sum;
+  // Result variable
+  uint32_t result;
 
   // Read data from register
   // Unsigned data
@@ -1150,17 +1397,30 @@ void add_reg_2(uint16_t inst) {
   s_rn_data = R[rn];
 
   // Add operation
-  unsigned_sum = u_rm_data + u_rn_data; // Unsigned add
+  unsigned_sum = (uint64_t)u_rm_data + (uint64_t)u_rn_data; // Unsigned add
   signed_sum = s_rm_data + s_rn_data; // Signed add
 
+  // Truncate summation result
+  result = (int32_t) unsigned_sum;
+
   // Write data to register
-  R[rd] = unsigned_sum;
+  R[rd] = result;
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(unsigned_sum, 31);
-  APSR.Z = (unsigned_sum == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
+  // Carry out checking
+  if (unsigned_sum != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sum != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Compare (Register 2) Instruction
@@ -1169,22 +1429,47 @@ void comp_reg_2(uint16_t inst) {
   uint32_t n = zeroExtend32(INST_(7));
   uint32_t rm = zeroExtend32(INST(6, 3));
   uint32_t rn = zeroExtend32(INST(2, 0)) | (n << 3);
-  uint32_t rm_data;
-  uint32_t rn_data;
+  // Unsigned data variable
+  uint32_t u_rm_data;
+  uint32_t u_rn_data;
+  uint64_t unsigned_sub;
+  // Signed data variable
+  int32_t s_rm_data;
+  int32_t s_rn_data;
+  int64_t signed_sub;
+  // Result variable
   uint32_t result;
 
   // Read data from register
-  rm_data = R[rm];
-  rn_data = R[rn];
+  // Unsigned data
+  u_rm_data = R[rm];
+  u_rn_data = R[rn];
+  // Signed data
+  s_rm_data = R[rm];
+  s_rn_data = R[rn];
 
   // Sub operation
-  result = rn_data + ~(rm_data) + 1; // Two's complement substraction
+  unsigned_sub = (uint64_t)u_rn_data + (uint64_t)(~u_rm_data) + 1; 
+  signed_sub = s_rn_data + ~(s_rm_data) + 1;
+
+  // Truncate summation result
+  result = (int32_t) unsigned_sub;
 
   // Write value to APSR (status register)
   APSR.N = extract32_(result, 31);
   APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V; //NOTE: Fix status register
+  // Carry out checking
+  if (unsigned_sub != (uint64_t)result) {
+    APSR.C = 1;
+  } else {
+    APSR.C = 0;
+  }
+  // Overflow checking
+  if (signed_sub != (int64_t)result) {
+    APSR.V = 1;
+  } else {
+    APSR.V = 0;
+  }
 }
 
 // Move (Register) Instruction
@@ -1204,12 +1489,6 @@ void mov_reg(uint16_t inst) {
 
   // Write data to register
   R[rd] = result;
-
-  // Write value to APSR (status register)
-  APSR.N = extract32_(result, 31);
-  APSR.Z = (result == 0) ? 1 : 0;
-  APSR.C = APSR.C; //NOTE: Fix status register
-  APSR.V = APSR.V;
 }
 
 // Branch Exchange Instruction
@@ -1249,7 +1528,7 @@ void bl_exchange(uint16_t inst) {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void ld_pool(uint16_t inst) {
   uint32_t rt = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t mem_addr;
 
   // Calculate memory address
@@ -1299,7 +1578,7 @@ void strh_reg(uint16_t inst) {
   // Read data from register
   rm_data = R[rm];
   rn_data = R[rn];
-  rt_data = extract32(R[rt], 0, 15); // Get Halfword from bit 0 - bit 15
+  rt_data = extract32(R[rt], 15, 0); // Get Halfword from bit 0 - bit 15
 
   // Bitwise AND operation
   addr_offset = rn_data + rm_data;
@@ -1322,7 +1601,7 @@ void strb_reg(uint16_t inst) {
   // Read data from register
   rm_data = R[rm];
   rn_data = R[rn];
-  rt_data = extract32(R[rt], 0, 8); // Get Byte from bit 0 - bit 8
+  rt_data = extract32(R[rt], 8, 0); // Get Byte from bit 0 - bit 8
 
   // Bitwise AND operation
   addr_offset = rn_data + rm_data;
@@ -1461,7 +1740,7 @@ void ldsrh_reg(uint16_t inst) {
 // Store Word (Immediate) Instruction
 void str_imm(uint16_t inst) {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = zeroExtend32((INST(10, 6)) << 2); // Append 2 zeros at imm5 LSB and extend
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rt = zeroExtend32(INST(2, 0));
   uint32_t rn_data;
@@ -1482,7 +1761,7 @@ void str_imm(uint16_t inst) {
 // Load Word (Immediate) Instruction
 void ldr_imm(uint16_t inst) {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = zeroExtend32((INST(10, 6) << 2)); // Append 2 zeros at LSB and extend
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rt = zeroExtend32(INST(2, 0));
   uint32_t rm_data;
@@ -1515,7 +1794,7 @@ void strb_imm(uint16_t inst) {
 
   // Read data from register
   rn_data = R[rn];
-  rt_data = extract32(R[rt], 0, 8); // Get Byte from bit 0 - bit 8
+  rt_data = extract32(R[rt], 8, 0); // Get Byte from bit 0 - bit 8
 
   // Bitwise AND operation
   addr_offset = rn_data + imm5;
@@ -1551,7 +1830,7 @@ void ldrb_imm(uint16_t inst) {
 // Store Halfword (Immediate) Instruction
 void strh_imm(uint16_t inst) {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = zeroExtend32((INST(10, 6) < 1)); // Append 1 zero at LSB and extend
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rt = zeroExtend32(INST(2, 0));
   uint32_t rn_data;
@@ -1560,7 +1839,7 @@ void strh_imm(uint16_t inst) {
 
   // Read data from register
   rn_data = R[rn];
-  rt_data = extract32(R[rt], 0, 16); // Get Byte from bit 0 - bit 16
+  rt_data = extract32(R[rt], 16, 0); // Get Byte from bit 0 - bit 16
 
   // Bitwise AND operation
   addr_offset = rn_data + imm5;
@@ -1572,7 +1851,7 @@ void strh_imm(uint16_t inst) {
 // Load Halfword (Immediate) Instruction
 void ldrh_imm(uint16_t inst) {
   // Declare local variables
-  uint32_t imm5 = zeroExtend32(INST(10, 6));
+  uint32_t imm5 = zeroExtend32((INST(10, 6) < 1)); // Append 1 zero at LSB and extend 
   uint32_t rn = zeroExtend32(INST(5, 3));
   uint32_t rt = zeroExtend32(INST(2, 0));
   uint32_t rm_data;
@@ -1597,7 +1876,7 @@ void ldrh_imm(uint16_t inst) {
 void str_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rt = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t rn_data;
   uint32_t rt_data;
   uint32_t addr_offset;
@@ -1617,7 +1896,7 @@ void str_sp_imm(uint16_t inst) {
 void ldr_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rt = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t rn_data;
   uint32_t rt_data;
   uint32_t addr_offset;
@@ -1642,7 +1921,7 @@ void ldr_sp_imm(uint16_t inst) {
 void adr_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rd = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1656,7 +1935,7 @@ void adr_imm(uint16_t inst) {
 void add_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rd = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1673,7 +1952,7 @@ void add_sp_imm(uint16_t inst) {
 void add_sp_imm_2(uint16_t inst) {
   // Declare local variables
   uint32_t rd = 13;
-  uint32_t imm7 = zeroExtend32(INST(6, 0));
+  uint32_t imm7 = zeroExtend32((INST(6, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1687,7 +1966,7 @@ void add_sp_imm_2(uint16_t inst) {
 void sub_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rd = 13;
-  uint32_t imm7 = zeroExtend32(INST(6, 0));
+  uint32_t imm7 = zeroExtend32((INST(6, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1706,7 +1985,7 @@ void sxth_reg(uint16_t inst) {
   uint32_t rd_data;
 
   // Read data from register
-  rm_data = extract32(R[rm], 0, 15);
+  rm_data = extract32(R[rm], 15, 0);
 
   // Sign extend data
   rd_data = sign_extend(rm_data, 15);
@@ -1724,7 +2003,7 @@ void sxtb_reg(uint16_t inst) {
   uint32_t rd_data;
 
   // Read data from register
-  rm_data = extract32(R[rm], 0, 7);
+  rm_data = extract32(R[rm], 7, 0);
 
   // Sign extend data
   rd_data = sign_extend(rm_data, 7);
@@ -1742,7 +2021,7 @@ void uxth_reg(uint16_t inst) {
   uint32_t rd_data;
 
   // Read data from register
-  rm_data = extract32(R[rm], 0, 15);
+  rm_data = extract32(R[rm], 15, 0);
 
   // Sign extend data
   rd_data = zeroExtend32(rm_data);
@@ -1760,7 +2039,7 @@ void uxtb_reg(uint16_t inst) {
   uint32_t rd_data;
 
   // Read data from register
-  rm_data = extract32(R[rm], 0, 7);
+  rm_data = extract32(R[rm], 7, 0);
 
   // Sign extend data
   rd_data = zeroExtend32(rm_data);
@@ -1775,17 +2054,17 @@ void push_reg(uint16_t inst) {
   int i;
   uint32_t mem_addr;
   uint32_t reg_count;
-  uint32_t pc_write = zeroExtend32(INST_(8));
-  uint32_t reg_list = zeroExtend32(INST(7, 0));
+  uint32_t lr_write = zeroExtend32(INST_(8));
+  uint32_t reg_list = zeroExtend32(INST(7, 0)) | (lr_write << 14);
 
   // Calculate bit count value
-  reg_count = (pc_write == 1) ? bit_count(reg_list, 8)+1 : bit_count(reg_list, 8);
+  reg_count = bit_count(reg_list, 16);
 
   // Calculate memory address
   mem_addr = SP - (4 * reg_count);
 
-  // Store general register value
-  for (i=0; i<8; i++) {
+  // Store register value
+  for (i=0; i<16; i++) {
     // Check bit
     if (extract32_(reg_list, i) == 1) {
       // Write to memory
@@ -1793,12 +2072,6 @@ void push_reg(uint16_t inst) {
       // Increment address
       mem_addr += 4;
     }
-  }
-
-  // Store link register value
-  if (pc_write == 1) {
-    // Write to memory
-    write_word(mem_addr, R[i]);
   }
 
   // Update stack pointer
@@ -1817,10 +2090,10 @@ void rev_reg(uint16_t inst) {
   uint32_t result;
 
   // Read data from register
-  rm_data_0 = extract32(R[rm], 0, 7); // First byte
-  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
-  rm_data_2 = extract32(R[rm], 16, 23); // Third byte
-  rm_data_3 = extract32(R[rm], 24, 31); // Fourth byte
+  rm_data_0 = extract32(R[rm], 7, 0); // First byte
+  rm_data_1 = extract32(R[rm], 15, 8); // Second byte
+  rm_data_2 = extract32(R[rm], 23, 16); // Third byte
+  rm_data_3 = extract32(R[rm], 31, 24); // Fourth byte
 
   // Reverse byte ordering
   result = (rm_data_0 << 24) | (rm_data_1 << 16) | (rm_data_2 << 8) | (rm_data_3); 
@@ -1841,10 +2114,10 @@ void rev16_reg(uint16_t inst) {
   uint32_t result;
 
   // Read data from register
-  rm_data_0 = extract32(R[rm], 0, 7); // First byte
-  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
-  rm_data_2 = extract32(R[rm], 16, 23); // Third byte
-  rm_data_3 = extract32(R[rm], 24, 31); // Fourth byte
+  rm_data_0 = extract32(R[rm], 7, 0); // First byte
+  rm_data_1 = extract32(R[rm], 15, 8); // Second byte
+  rm_data_2 = extract32(R[rm], 23, 16); // Third byte
+  rm_data_3 = extract32(R[rm], 31, 24); // Fourth byte
 
   // Reverse byte ordering
   result = (rm_data_2 << 24) | (rm_data_3 << 16) | (rm_data_0 << 8) | (rm_data_1); 
@@ -1863,9 +2136,9 @@ void revsh_reg(uint16_t inst) {
   uint32_t result;
 
   // Read data from register
-  rm_data_0 = extract32(R[rm], 0, 7); // First byte
+  rm_data_0 = extract32(R[rm], 7, 0); // First byte
   rm_data_0 = sign_extend(rm_data_0, 8); // Sign extend
-  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
+  rm_data_1 = extract32(R[rm], 15, 8); // Second byte
 
   // Reverse byte ordering
   result = (rm_data_0 << 24) | (rm_data_1); 
@@ -1881,10 +2154,10 @@ void pop_reg(uint16_t inst) {
   uint32_t mem_addr;
   uint32_t reg_count;
   uint32_t pc_load = zeroExtend32(INST_(8));
-  uint32_t reg_list = zeroExtend32(INST(7, 0));
+  uint32_t reg_list = zeroExtend32(INST(7, 0)) | (pc_load << 15);
 
   // Calculate bit count value
-  reg_count = (pc_load == 1) ? bit_count(reg_list, 8)+1 : bit_count(reg_list, 8);
+  reg_count = bit_count(reg_list, 16);
 
   // Calculate memory address
   mem_addr = SP;
@@ -1901,7 +2174,7 @@ void pop_reg(uint16_t inst) {
   }
 
   // Check for PC load variable
-  if (pc_load == 1) {
+  if (extract32_(reg_list, 15) == 1) {
     PC = read_word(mem_addr);
   }
 
@@ -1978,14 +2251,53 @@ void load_mul(uint16_t inst) {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void b_conditional(uint16_t inst) {
   // Declare Local Variables
-  uint32_t imm8 = zeroExtend32(INST(7, 0));
+  uint32_t cond = zeroExtend32(INST(11, 8));
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 1)); // Add 1 zero to LSB and extend
   uint32_t imm32;
 
   // Calculate imm32 value
-  imm32 = sign_extend((imm8 << 1), 9);
+  imm32 = sign_extend(imm8, 9);
+
+  // Check condition code
+  switch (extract32(cond, 3, 1)) {
+    case 0: // Equal condition checking (000)
+      branch = (APSR.Z == 1);
+      break;
+    case 1: // Carry set checking (001)
+      branch = (APSR.C == 1);
+      break;
+    case 2: // Negative condition checking (010)
+      branch = (APSR.N == 1);
+      break;
+    case 3: // Overflow condition checking (011)
+      branch = (APSR.V == 1);
+      break;
+    case 4: // Unsigned higher condition checking (100)
+      branch = (APSR.C == 1) && (APSR.Z == 0);
+      break;
+    case 5: // Signed greater equal condition checking (101)
+      branch = (APSR.N == APSR.V);
+      break;
+    case 6: // Signed greater condition checking (110)
+      branch = (APSR.N == APSR.V) && (APSR.Z == 0);
+      break;
+    case 7: // Unconditional condition checking (111)
+      branch = 1;
+      break;
+    default:
+      branch = 0;
+      break;
+  }
+
+  // Invert condition checking
+  if ((extract32_(cond, 0) == 1) && (cond != 15)) {
+    branch = !branch;
+  }
 
   // Write new PC value
-  PC = PC + imm32;
+  if (branch) {
+    PC = (PC + imm32) & 0xFFFFFFFE;
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

@@ -67,26 +67,67 @@ int main(void) {
   asm volatile("DATA: mov r4, %[value]" :: [value] "r" (a));
   asm volatile("mov r5, %[value]" :: [value] "r" (b));
   asm volatile("mov r6, %[value]" :: [value] "r" (c));
-  asm volatile("mov r7, %[value]" :: [value] "r" (d));
+  asm volatile("mov r1, %[value]" :: [value] "r" (d));
   asm volatile("mov r3, %[value]" :: [value] "r" (e));
   asm volatile (
-    "and r2, r4, r5\n\t"
-    "eor r2, r4, r5\n\t"
-    "lsl r2, r7, r4\n\t"
-    "lsr r2, r7, r4\n\t"
-    "lsr r2, r7, r6\n\t"
-    "ror r2, r7, r4\n\t"
+    "mov r2, r4\n\t"
+    "and r2, r2, r5\n\t"
+    "mov r2, r4\n\t"
+    "eor r2, r2, r5\n\t"
+    "mov r2, r4\n\t"
+    "lsl r2, r2, r1\n\t"
+    "mov r2, r4\n\t"
+    "lsr r2, r2, r1\n\t"
+    "mov r2, r6\n\t"
+    "asr r2, r2, r1\n\t"
+    "mov r2, r4\n\t"
+    "ror r2, r2, r1\n\t"
     "tst r4, r5\n\t"
-    "rsb r2, r4, #0\n\t"
+    // "rsb r2, r4, #0\n\t"
     "cmp r4, r4\n\t"
     "cmn r3, r4\n\t"
-    "orr r2, r4, r5\n\t"
-    "mul r2, r4, r7\n\t"
+    "mov r2, r4\n\t"
+    "orr r2, r2, r5\n\t"
+    "mov r2, r1\n\t"
+    "mul r2, r4, r2\n\t"
     "mvn r2, r4\n\t"
   );
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
   //                                  Load Store Instruction Test                                //
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Assign value to variable
+  a = 0xF0F0;
+  b = 0xF000;
+  c = 0x0;
+  d = 0x1234;
+
+  // Load value to register
+  asm volatile("LDST: mov r4, %[value]" :: [value] "r" (a));
+  asm volatile("mov r5, %[value]" :: [value] "r" (b));
+  asm volatile("mov r6, %[value]" :: [value] "r" (c));
+  asm volatile("mov r3, %[value]" :: [value] "r" (d));
+
+  // Instruction test
+  asm volatile (
+    "str r4, [r5, r6]\n\t"
+    "strh r3, [r5, r6]\n\t"
+    "strb r4, [r5, r6]\n\t"
+    "ldrsb r0, [r3, r6]\n\t"
+    "ldr r0, [r5, r6]\n\t"
+    "ldrb r0, [r4, r6]\n\t"
+    "ldrh r0, [r4, r6]\n\t"
+    "ldrsh r0, [r4, r6]\n\t"
+    "str r4, [r5, #0]\n\t"
+    "ldr r0, [r5, #0]\n\t"
+    "strb r4, [r5, #0]\n\t"
+    "ldrb r0, [r4, #0]\n\t"
+    "strh r3, [r5, #0]\n\t"
+    "ldrh r0, [r4, #0]\n\t"
+  );
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                 Miscellaneous Instruction Test                              //
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,7 +255,6 @@ int main(void) {
     "mov r4, #0\n\t"
     "mov r5, #0\n\t"
     "mov r6, #0\n\t"
-    "mov r7, #0\n\t"
   );
 
   // Return value

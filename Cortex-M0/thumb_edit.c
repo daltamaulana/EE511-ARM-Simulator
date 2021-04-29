@@ -392,20 +392,22 @@ void lsl_imm(uint16_t inst)
   uint32_t rd = zeroExtend32(INST(2, 0));
   uint32_t reg_data;
   uint32_t carry_out;
+  uint32_t result;
 
   // Read data from register
   reg_data = R[rm];
 
   // Performs shifting operation
+  result = (reg_data << imm5-1);
   carry_out = extract32_(reg_data, 31);
-  reg_data = (reg_data << imm5);
+  result = (result << 1);
 
   // Write data to register
-  R[rd] = reg_data;
+  R[rd] = result;
 
   // Write value to APSR (status register)
-  APSR.N = extract32_(reg_data, 31);
-  APSR.Z = (reg_data == 0) ? 1 : 0;
+  APSR.N = extract32_(result, 31);
+  APSR.Z = (result == 0) ? 1 : 0;
   APSR.C = (imm5 > 0) ? carry_out : APSR.C;
   APSR.V = APSR.V;
 }
@@ -895,7 +897,7 @@ void lsl_reg(uint16_t inst)
   // Performs shifting operation
   result = (rn_data << extract32(rm_data, 7, 0)-1);
   carry_out = extract32_(rn_data, 31);
-  result = (rn_data << 1);
+  result = (result << 1);
 
   // Write data to register
   R[rdn] = result;
@@ -1089,7 +1091,7 @@ void ror_reg(uint16_t inst)
   rn_data = R[rdn];
 
   // Rotate operation
-  temp = extract32(rn_data, 0, (rm_data-1));
+  temp = extract32(rn_data, (rm_data-1), 0);
   temp = (temp << (32-rm_data));
   result = (rn_data >> rm_data);
   result = result ^ temp;
@@ -1576,7 +1578,7 @@ void strh_reg(uint16_t inst) {
   // Read data from register
   rm_data = R[rm];
   rn_data = R[rn];
-  rt_data = extract32(R[rt], 0, 15); // Get Halfword from bit 0 - bit 15
+  rt_data = extract32(R[rt], 15, 0); // Get Halfword from bit 0 - bit 15
 
   // Bitwise AND operation
   addr_offset = rn_data + rm_data;
@@ -1599,7 +1601,7 @@ void strb_reg(uint16_t inst) {
   // Read data from register
   rm_data = R[rm];
   rn_data = R[rn];
-  rt_data = extract32(R[rt], 0, 8); // Get Byte from bit 0 - bit 8
+  rt_data = extract32(R[rt], 8, 0); // Get Byte from bit 0 - bit 8
 
   // Bitwise AND operation
   addr_offset = rn_data + rm_data;
@@ -1792,7 +1794,7 @@ void strb_imm(uint16_t inst) {
 
   // Read data from register
   rn_data = R[rn];
-  rt_data = extract32(R[rt], 0, 8); // Get Byte from bit 0 - bit 8
+  rt_data = extract32(R[rt], 8, 0); // Get Byte from bit 0 - bit 8
 
   // Bitwise AND operation
   addr_offset = rn_data + imm5;
@@ -1837,7 +1839,7 @@ void strh_imm(uint16_t inst) {
 
   // Read data from register
   rn_data = R[rn];
-  rt_data = extract32(R[rt], 0, 16); // Get Byte from bit 0 - bit 16
+  rt_data = extract32(R[rt], 16, 0); // Get Byte from bit 0 - bit 16
 
   // Bitwise AND operation
   addr_offset = rn_data + imm5;
@@ -1933,7 +1935,7 @@ void adr_imm(uint16_t inst) {
 void add_sp_imm(uint16_t inst) {
   // Declare local variables
   uint32_t rd = zeroExtend32(INST(10, 8));
-  uint32_t imm8 = imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
+  uint32_t imm8 = zeroExtend32((INST(7, 0) << 2)); // Append 2 zeros at LSB and extend
   uint32_t result;
 
   // Calculate PC offset
@@ -1983,7 +1985,7 @@ void sxth_reg(uint16_t inst) {
   uint32_t rd_data;
 
   // Read data from register
-  rm_data = extract32(R[rm], 0, 15);
+  rm_data = extract32(R[rm], 15, 0);
 
   // Sign extend data
   rd_data = sign_extend(rm_data, 15);
@@ -2001,7 +2003,7 @@ void sxtb_reg(uint16_t inst) {
   uint32_t rd_data;
 
   // Read data from register
-  rm_data = extract32(R[rm], 0, 7);
+  rm_data = extract32(R[rm], 7, 0);
 
   // Sign extend data
   rd_data = sign_extend(rm_data, 7);
@@ -2019,7 +2021,7 @@ void uxth_reg(uint16_t inst) {
   uint32_t rd_data;
 
   // Read data from register
-  rm_data = extract32(R[rm], 0, 15);
+  rm_data = extract32(R[rm], 15, 0);
 
   // Sign extend data
   rd_data = zeroExtend32(rm_data);
@@ -2037,7 +2039,7 @@ void uxtb_reg(uint16_t inst) {
   uint32_t rd_data;
 
   // Read data from register
-  rm_data = extract32(R[rm], 0, 7);
+  rm_data = extract32(R[rm], 7, 0);
 
   // Sign extend data
   rd_data = zeroExtend32(rm_data);
@@ -2088,10 +2090,10 @@ void rev_reg(uint16_t inst) {
   uint32_t result;
 
   // Read data from register
-  rm_data_0 = extract32(R[rm], 0, 7); // First byte
-  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
-  rm_data_2 = extract32(R[rm], 16, 23); // Third byte
-  rm_data_3 = extract32(R[rm], 24, 31); // Fourth byte
+  rm_data_0 = extract32(R[rm], 7, 0); // First byte
+  rm_data_1 = extract32(R[rm], 15, 8); // Second byte
+  rm_data_2 = extract32(R[rm], 23, 16); // Third byte
+  rm_data_3 = extract32(R[rm], 31, 24); // Fourth byte
 
   // Reverse byte ordering
   result = (rm_data_0 << 24) | (rm_data_1 << 16) | (rm_data_2 << 8) | (rm_data_3); 
@@ -2112,10 +2114,10 @@ void rev16_reg(uint16_t inst) {
   uint32_t result;
 
   // Read data from register
-  rm_data_0 = extract32(R[rm], 0, 7); // First byte
-  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
-  rm_data_2 = extract32(R[rm], 16, 23); // Third byte
-  rm_data_3 = extract32(R[rm], 24, 31); // Fourth byte
+  rm_data_0 = extract32(R[rm], 7, 0); // First byte
+  rm_data_1 = extract32(R[rm], 15, 8); // Second byte
+  rm_data_2 = extract32(R[rm], 23, 16); // Third byte
+  rm_data_3 = extract32(R[rm], 31, 24); // Fourth byte
 
   // Reverse byte ordering
   result = (rm_data_2 << 24) | (rm_data_3 << 16) | (rm_data_0 << 8) | (rm_data_1); 
@@ -2134,9 +2136,9 @@ void revsh_reg(uint16_t inst) {
   uint32_t result;
 
   // Read data from register
-  rm_data_0 = extract32(R[rm], 0, 7); // First byte
+  rm_data_0 = extract32(R[rm], 7, 0); // First byte
   rm_data_0 = sign_extend(rm_data_0, 8); // Sign extend
-  rm_data_1 = extract32(R[rm], 8, 15); // Second byte
+  rm_data_1 = extract32(R[rm], 15, 8); // Second byte
 
   // Reverse byte ordering
   result = (rm_data_0 << 24) | (rm_data_1); 
